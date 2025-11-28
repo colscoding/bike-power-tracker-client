@@ -1,6 +1,6 @@
 import './main.css';
 import { initTimerDisplay } from './ui/time.js';
-import { initDiscardButton, initExportButton, initMetricsToggle } from './ui/menu.js';
+import { initDiscardButton, initExportButton } from './ui/menu.js';
 import { initMetricsDisplay } from './initMetricsDisplay.js';
 import { initConnectionButtons } from './initConnectionButtons.js';
 import { getInitState } from './getInitState.js';
@@ -19,7 +19,6 @@ initMetricsDisplay({ connectionsState, measurementsState });
 initConnectionButtons({ connectionsState, measurementsState });
 initDiscardButton({ measurementsState, timeState });
 initExportButton(measurementsState);
-initMetricsToggle();
 
 handleWakeLock();
 registerServiceWorker();

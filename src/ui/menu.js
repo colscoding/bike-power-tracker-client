@@ -1,22 +1,6 @@
 import { getCsvString } from "../create-csv";
 import { getTcxString } from "../create-tcx";
 
-export const initMetricsToggle = () => {
-    // Your Metrics Toggle
-    const toggleYour = document.getElementById('toggleYourMetrics');
-    const yourMetricsSection = document.getElementById('yourMetrics');
-
-    if (toggleYour && yourMetricsSection) {
-        // Initial state check
-        toggleYour.checked = yourMetricsSection.style.display !== 'none';
-
-        toggleYour.addEventListener('change', (e) => {
-            const show = e.target.checked;
-            yourMetricsSection.style.display = show ? 'flex' : 'none';
-        });
-    }
-}
-
 export const initDiscardButton = ({ measurementsState, timeState }) => {
     // Discard button - in menu with confirmation dialog
     const discardButton = document.getElementById('discardButton');

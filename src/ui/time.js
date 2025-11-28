@@ -54,4 +54,9 @@ export const initTimerDisplay = (timeState) => {
             startStopButton.textContent = '⏹️';
         }
     });
+
+    // Allow clicking the time to toggle start/stop
+    timeElement.addEventListener('click', () => {
+        startStopButton.click();
+    });
 }
