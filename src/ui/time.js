@@ -6,7 +6,7 @@ export const initTimerDisplay = (timeState) => {
     const metricsTable = document.getElementById('metricsTable');
 
     setInterval(() => {
-        let nextText = '00:00:00'
+        let nextText = '00:00:00';
         if (timeState.startTime && timeState.running) {
             const elapsedMs = Date.now() - timeState.startTime;
             nextText = getTimestring(elapsedMs);
@@ -59,4 +59,4 @@ export const initTimerDisplay = (timeState) => {
     timeElement.addEventListener('click', () => {
         startStopButton.click();
     });
-}
+};

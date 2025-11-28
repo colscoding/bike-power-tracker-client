@@ -12,7 +12,9 @@ test('heartrate element should have initial value of "--"', async ({ page }) => 
     await expect(heartrateElement).toHaveText('--');
 });
 
-test('heartrate should be "--" initially, then show value 1-299 after clicking connect', async ({ page }) => {
+test('heartrate should be "--" initially, then show value 1-299 after clicking connect', async ({
+    page,
+}) => {
     await page.goto('http://localhost:5173');
 
     // Wait for initial load
@@ -66,7 +68,9 @@ test('heartrate element should show "--" when data is older than 3 seconds', asy
     await expect(heartrateElement).toHaveText('--');
 });
 
-test('heartrate element should update from "--" to value when fresh data arrives', async ({ page }) => {
+test('heartrate element should update from "--" to value when fresh data arrives', async ({
+    page,
+}) => {
     await page.goto('http://localhost:5173');
 
     // Wait for initial value

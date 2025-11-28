@@ -98,6 +98,6 @@ test('getCsvString rounds decimal values', () => {
 
     // Values should be rounded
     assert.strictEqual(dataRow[1], '251'); // power
-    assert.strictEqual(dataRow[2], '80');  // cadence
+    assert.strictEqual(dataRow[2], '80'); // cadence
     assert.strictEqual(dataRow[3], '146'); // heartrate
 });

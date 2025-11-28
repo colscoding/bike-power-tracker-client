@@ -66,7 +66,9 @@ test('power element should update from "--" to value when fresh data arrives', a
     await expect(powerElement).toHaveText('250');
 });
 
-test('power should be "--" initially, then show value 0-3000 after clicking connect', async ({ page }) => {
+test('power should be "--" initially, then show value 0-3000 after clicking connect', async ({
+    page,
+}) => {
     await page.goto('http://localhost:5173');
 
     // Wait for initial load

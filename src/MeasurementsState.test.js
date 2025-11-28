@@ -5,7 +5,7 @@ import { MeasurementsState } from './MeasurementsState.js';
 test('MeasurementsState should add cadence measurement with timestamp and value', () => {
     const bike = new MeasurementsState();
     const timestamp = Date.now();
-    const value = 80
+    const value = 80;
     bike.addCadence({ timestamp, value });
 
     assert.strictEqual(bike.cadence.length, 1);

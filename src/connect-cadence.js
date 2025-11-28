@@ -3,16 +3,16 @@ export const connectCadenceMock = async () => {
     const cadenceInterval = setInterval(() => {
         const randomCadence = Math.floor(Math.random() * 40) + 70; // 70-110 rpm
         const entry = { timestamp: Date.now(), value: randomCadence };
-        listeners.forEach(listener => listener(entry));
+        listeners.forEach((listener) => listener(entry));
     }, 1000);
 
     return {
         disconnect: () => clearInterval(cadenceInterval),
         addListener: (callback) => {
             listeners.push(callback);
-        }
+        },
     };
-}
+};
 
 export const connectCadenceBluetooth = async () => {
     const listeners = [];
@@ -22,7 +22,7 @@ export const connectCadenceBluetooth = async () => {
     // Request Bluetooth device with cycling speed and cadence service
     const device = await navigator.bluetooth.requestDevice({
         filters: [{ services: ['cycling_speed_and_cadence'] }],
-        optionalServices: ['cycling_speed_and_cadence']
+        optionalServices: ['cycling_speed_and_cadence'],
     });
 
     // Connect to GATT server
@@ -76,7 +76,7 @@ export const connectCadenceBluetooth = async () => {
                     // Sanity check for reasonable cadence values
                     if (rpm >= 0 && rpm < 300) {
                         const entry = { timestamp: Date.now(), value: rpm };
-                        listeners.forEach(listener => listener(entry));
+                        listeners.forEach((listener) => listener(entry));
                     }
                 }
             }
@@ -93,9 +93,9 @@ export const connectCadenceBluetooth = async () => {
         },
         addListener: (callback) => {
             listeners.push(callback);
-        }
+        },
     };
-}
+};
 
 export const connectCadence = async () => {
     if (import.meta.env.MODE === 'development' || import.meta.env.MODE === 'test') {

@@ -13,7 +13,7 @@ test('getValuesAtTimestamps returns exact matches', () => {
     const arr = [
         { timestamp: 1000, value: 100 },
         { timestamp: 2000, value: 200 },
-        { timestamp: 3000, value: 300 }
+        { timestamp: 3000, value: 300 },
     ];
     const result = getValuesAtTimestamps(arr, [1000, 2000, 3000]);
     assert.deepStrictEqual(result, [100, 200, 300]);
@@ -22,7 +22,7 @@ test('getValuesAtTimestamps returns exact matches', () => {
 test('getValuesAtTimestamps returns nearest value within 1 second', () => {
     const arr = [
         { timestamp: 1000, value: 100 },
-        { timestamp: 2500, value: 250 }
+        { timestamp: 2500, value: 250 },
     ];
     const result = getValuesAtTimestamps(arr, [1000, 2000, 3000]);
     assert.deepStrictEqual(result, [100, 250, 250]);
@@ -31,7 +31,7 @@ test('getValuesAtTimestamps returns nearest value within 1 second', () => {
 test('getValuesAtTimestamps returns null when no value within 1 second', () => {
     const arr = [
         { timestamp: 1000, value: 100 },
-        { timestamp: 5000, value: 500 }
+        { timestamp: 5000, value: 500 },
     ];
     const result = getValuesAtTimestamps(arr, [1000, 3000, 5000]);
     assert.deepStrictEqual(result, [100, null, 500]);
@@ -40,7 +40,7 @@ test('getValuesAtTimestamps returns null when no value within 1 second', () => {
 test('getValuesAtTimestamps chooses closer value when between two points', () => {
     const arr = [
         { timestamp: 1000, value: 100 },
-        { timestamp: 3000, value: 300 }
+        { timestamp: 3000, value: 300 },
     ];
     const result = getValuesAtTimestamps(arr, [1800, 2200]);
     // 1800 is 800ms from 1000, 1200ms from 3000 → chooses 100
@@ -51,7 +51,7 @@ test('getValuesAtTimestamps chooses closer value when between two points', () =>
 test('getValuesAtTimestamps handles timestamps before first data point', () => {
     const arr = [
         { timestamp: 2000, value: 200 },
-        { timestamp: 3000, value: 300 }
+        { timestamp: 3000, value: 300 },
     ];
     const result = getValuesAtTimestamps(arr, [1000, 2000, 3000]);
     assert.deepStrictEqual(result, [null, 200, 300]);
@@ -60,7 +60,7 @@ test('getValuesAtTimestamps handles timestamps before first data point', () => {
 test('getValuesAtTimestamps handles timestamps after last data point', () => {
     const arr = [
         { timestamp: 1000, value: 100 },
-        { timestamp: 2000, value: 200 }
+        { timestamp: 2000, value: 200 },
     ];
     const result = getValuesAtTimestamps(arr, [1000, 2000, 3000, 4000]);
     assert.deepStrictEqual(result, [100, 200, null, null]);
@@ -100,7 +100,7 @@ test('mergeMeasurements merges all three metrics at same timestamp', () => {
         timestamp: 1000,
         heartrate: 140,
         cadence: 80,
-        power: 250
+        power: 250,
     });
 });
 
@@ -116,13 +116,13 @@ test('mergeMeasurements handles missing metrics with null', () => {
         timestamp: 1000,
         heartrate: 140,
         cadence: null,
-        power: null
+        power: null,
     });
     assert.deepStrictEqual(result[1], {
         timestamp: 2000,
         heartrate: null,
         cadence: null,
-        power: 250
+        power: 250,
     });
 });
 

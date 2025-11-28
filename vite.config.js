@@ -10,8 +10,8 @@ export default defineConfig({
     },
     server: {
         headers: {
-            'Cache-Control': 'no-store' // Prevent browser caching in development
-        }
+            'Cache-Control': 'no-store', // Prevent browser caching in development
+        },
     },
     plugins: [
         VitePWA({
@@ -22,7 +22,8 @@ export default defineConfig({
                 id: './',
                 name: 'Bike Power Tracker',
                 short_name: 'Bike Power Tracker',
-                description: 'Track your spin bike: power, cadence, and heart rate with bluetooth sensors',
+                description:
+                    'Track your spin bike: power, cadence, and heart rate with bluetooth sensors',
                 start_url: './',
                 scope: './',
                 display: 'standalone',
@@ -37,56 +38,56 @@ export default defineConfig({
                         src: 'assets/icons/icon-72.png',
                         sizes: '72x72',
                         type: 'image/png',
-                        purpose: 'any'
+                        purpose: 'any',
                     },
                     {
                         src: 'assets/icons/icon-96.png',
                         sizes: '96x96',
                         type: 'image/png',
-                        purpose: 'any'
+                        purpose: 'any',
                     },
                     {
                         src: 'assets/icons/icon-128.png',
                         sizes: '128x128',
                         type: 'image/png',
-                        purpose: 'any'
+                        purpose: 'any',
                     },
                     {
                         src: 'assets/icons/icon-144.png',
                         sizes: '144x144',
                         type: 'image/png',
-                        purpose: 'any'
+                        purpose: 'any',
                     },
                     {
                         src: 'assets/icons/icon-152.png',
                         sizes: '152x152',
                         type: 'image/png',
-                        purpose: 'any'
+                        purpose: 'any',
                     },
                     {
                         src: 'assets/icons/icon-180.png',
                         sizes: '180x180',
                         type: 'image/png',
-                        purpose: 'any'
+                        purpose: 'any',
                     },
                     {
                         src: 'assets/icons/icon-192.png',
                         sizes: '192x192',
                         type: 'image/png',
-                        purpose: 'any maskable'
+                        purpose: 'any maskable',
                     },
                     {
                         src: 'assets/icons/icon-384.png',
                         sizes: '384x384',
                         type: 'image/png',
-                        purpose: 'any'
+                        purpose: 'any',
                     },
                     {
                         src: 'assets/icons/icon-512.png',
                         sizes: '512x512',
                         type: 'image/png',
-                        purpose: 'any maskable'
-                    }
+                        purpose: 'any maskable',
+                    },
                 ],
                 screenshots: [
                     {
@@ -94,16 +95,16 @@ export default defineConfig({
                         sizes: '381x889',
                         type: 'image/png',
                         form_factor: 'narrow',
-                        label: 'Bike Power Tracker app displaying real-time metrics on mobile'
+                        label: 'Bike Power Tracker app displaying real-time metrics on mobile',
                     },
                     {
                         src: 'assets/screenshots/desktop.png',
                         sizes: '1909x956',
                         type: 'image/png',
                         form_factor: 'wide',
-                        label: 'Bike Power Tracker app displaying real-time metrics on desktop'
-                    }
-                ]
+                        label: 'Bike Power Tracker app displaying real-time metrics on desktop',
+                    },
+                ],
             },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
@@ -115,19 +116,19 @@ export default defineConfig({
                             cacheName: 'google-fonts-cache',
                             expiration: {
                                 maxEntries: 10,
-                                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
                             },
                             cacheableResponse: {
-                                statuses: [0, 200]
-                            }
-                        }
-                    }
-                ]
+                                statuses: [0, 200],
+                            },
+                        },
+                    },
+                ],
             },
             devOptions: {
                 enabled: false, // Disable service worker in dev to prevent caching issues
-                type: 'module'
-            }
-        })
-    ]
+                type: 'module',
+            },
+        }),
+    ],
 });

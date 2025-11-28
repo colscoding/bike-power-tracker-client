@@ -1,5 +1,5 @@
-import { getCsvString } from "../create-csv";
-import { getTcxString } from "../create-tcx";
+import { getCsvString } from '../create-csv';
+import { getTcxString } from '../create-tcx';
 
 export const initDiscardButton = ({ measurementsState, timeState }) => {
     // Discard button - in menu with confirmation dialog
@@ -18,7 +18,7 @@ export const initDiscardButton = ({ measurementsState, timeState }) => {
             measurementsState.cadence = [];
         }
     });
-}
+};
 
 export const initExportButton = (measurementsState) => {
     const exportDataElem = document.getElementById('exportData');

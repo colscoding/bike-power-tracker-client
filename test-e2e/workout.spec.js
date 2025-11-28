@@ -7,7 +7,9 @@ test('time element should have initial value of "00:00:00"', async ({ page }) =>
     await expect(timeElement).toHaveText('00:00:00');
 });
 
-test('time element should start increasing after connecting and stop when disconnected', async ({ page }) => {
+test('time element should start increasing after connecting and stop when disconnected', async ({
+    page,
+}) => {
     await page.goto('http://localhost:5173');
 
     // 1. Check initial state
@@ -108,7 +110,7 @@ test('start/stop button should pause timer without resetting data', async ({ pag
     await page.evaluate(() => {
         window.bike.power = [
             { timestamp: Date.now(), value: 200 },
-            { timestamp: Date.now(), value: 250 }
+            { timestamp: Date.now(), value: 250 },
         ];
         window.connectionsState.power.isConnected = true;
     });
@@ -198,7 +200,7 @@ test('discard button should clear timer and measurements with confirmation', asy
     await page.waitForTimeout(200);
 
     // Set up dialog handler to cancel
-    page.once('dialog', async dialog => {
+    page.once('dialog', async (dialog) => {
         expect(dialog.message()).toContain('Are you sure');
         await dialog.dismiss();
     });
@@ -215,7 +217,7 @@ test('discard button should clear timer and measurements with confirmation', asy
     expect(measurementsStillThere).toBe(true);
 
     // Now confirm the discard
-    page.once('dialog', async dialog => {
+    page.once('dialog', async (dialog) => {
         expect(dialog.message()).toContain('Are you sure');
         await dialog.accept();
     });
@@ -229,9 +231,11 @@ test('discard button should clear timer and measurements with confirmation', asy
 
     // Verify measurements are cleared
     const measurementsCleared = await page.evaluate(() => {
-        return window.bike.power.length === 0 &&
+        return (
+            window.bike.power.length === 0 &&
             window.bike.heartrate.length === 0 &&
-            window.bike.cadence.length === 0;
+            window.bike.cadence.length === 0
+        );
     });
     expect(measurementsCleared).toBe(true);
 });
@@ -259,7 +263,7 @@ test('discard button should disconnect all sensors', async ({ page }) => {
     await expect(connectPowerButton).toContainText('Disconnect Power');
 
     // Set up dialog handler to accept
-    page.once('dialog', async dialog => {
+    page.once('dialog', async (dialog) => {
         await dialog.accept();
     });
 

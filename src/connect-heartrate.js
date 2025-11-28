@@ -1,19 +1,18 @@
-
 export const connectHeartRateMock = async () => {
     const listeners = [];
     const heartRateInterval = setInterval(() => {
         const randomHeartRate = Math.floor(Math.random() * 80) + 120; // 120-200 bpm
         const entry = { timestamp: Date.now(), value: randomHeartRate };
-        listeners.forEach(listener => listener(entry));
+        listeners.forEach((listener) => listener(entry));
     }, 1000);
 
     return {
         disconnect: () => clearInterval(heartRateInterval),
         addListener: (callback) => {
             listeners.push(callback);
-        }
+        },
     };
-}
+};
 
 export const connectHeartRateBluetooth = async () => {
     const listeners = [];
@@ -21,7 +20,7 @@ export const connectHeartRateBluetooth = async () => {
     // Request Bluetooth device with heart rate service
     const device = await navigator.bluetooth.requestDevice({
         filters: [{ services: ['heart_rate'] }],
-        optionalServices: ['heart_rate']
+        optionalServices: ['heart_rate'],
     });
 
     // Connect to GATT server
@@ -52,7 +51,7 @@ export const connectHeartRateBluetooth = async () => {
         }
 
         const entry = { timestamp: Date.now(), value: heartRate };
-        listeners.forEach(listener => listener(entry));
+        listeners.forEach((listener) => listener(entry));
     });
 
     return {
@@ -62,9 +61,9 @@ export const connectHeartRateBluetooth = async () => {
         },
         addListener: (callback) => {
             listeners.push(callback);
-        }
+        },
     };
-}
+};
 
 export const connectHeartRate = async () => {
     if (import.meta.env.MODE === 'development' || import.meta.env.MODE === 'test') {

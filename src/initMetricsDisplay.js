@@ -1,6 +1,6 @@
 import { elements } from './elements';
 
-export const initMetricsDisplay = ({ connectionsState, measurementsState, }) => {
+export const initMetricsDisplay = ({ connectionsState, measurementsState }) => {
     const updateMetricDisplay = (key) => {
         const element = elements?.[key]?.display;
         if (!element || !connectionsState?.[key]) {
@@ -18,7 +18,11 @@ export const initMetricsDisplay = ({ connectionsState, measurementsState, }) => 
         }
 
         const latestMeasurement = arr[arr.length - 1];
-        if (!latestMeasurement || typeof latestMeasurement.value !== 'number' || typeof latestMeasurement.timestamp !== 'number') {
+        if (
+            !latestMeasurement ||
+            typeof latestMeasurement.value !== 'number' ||
+            typeof latestMeasurement.timestamp !== 'number'
+        ) {
             element.textContent = emptyValue;
             return;
         }

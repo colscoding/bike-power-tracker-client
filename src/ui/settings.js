@@ -1,4 +1,3 @@
-
 export function initSettings() {
     const settingsButton = document.getElementById('settingsButton');
     const settingsModal = document.getElementById('settingsModal');
@@ -14,7 +13,7 @@ export function initSettings() {
         const settings = JSON.parse(localStorage.getItem('bpt-settings')) || {
             power: true,
             cadence: true,
-            heartrate: true
+            heartrate: true,
         };
 
         settingPower.checked = settings.power;
@@ -29,7 +28,7 @@ export function initSettings() {
         const settings = {
             power: settingPower.checked,
             cadence: settingCadence.checked,
-            heartrate: settingHeartrate.checked
+            heartrate: settingHeartrate.checked,
         };
 
         localStorage.setItem('bpt-settings', JSON.stringify(settings));
@@ -41,7 +40,7 @@ export function initSettings() {
     const applySettings = (settings) => {
         const toggleMetric = (metric, isVisible) => {
             const elements = document.querySelectorAll(`.metric-group-${metric}`);
-            elements.forEach(el => {
+            elements.forEach((el) => {
                 el.style.display = isVisible ? 'flex' : 'none';
             });
         };

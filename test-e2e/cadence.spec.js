@@ -9,7 +9,9 @@ test('cadence element should have initial value of "--"', async ({ page }) => {
     await expect(cadenceElement).toHaveText('--');
 });
 
-test('cadence should be "--" initially, then show value 1-299 after clicking connect', async ({ page }) => {
+test('cadence should be "--" initially, then show value 1-299 after clicking connect', async ({
+    page,
+}) => {
     await page.goto('http://localhost:5173');
 
     await page.waitForTimeout(200);
@@ -59,7 +61,9 @@ test('cadence element should show "--" when data is older than 3 seconds', async
     await expect(cadenceElement).toHaveText('--');
 });
 
-test('cadence element should update from "--" to value when fresh data arrives', async ({ page }) => {
+test('cadence element should update from "--" to value when fresh data arrives', async ({
+    page,
+}) => {
     await page.goto('http://localhost:5173');
 
     await page.waitForTimeout(200);
@@ -78,7 +82,6 @@ test('cadence element should update from "--" to value when fresh data arrives',
     await page.evaluate(() => {
         window.bike.cadence.push({ timestamp: Date.now(), value: 95 });
     });
-
 
     await page.evaluate(() => {
         window.connectionsState = window.connectionsState || { power: { isConnected: true } };

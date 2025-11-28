@@ -1,8 +1,9 @@
-import { MeasurementsState } from "./MeasurementsState.js"
-import { mergeMeasurements } from "./merge-measurements.js";
+import { mergeMeasurements } from './merge-measurements.js';
 
-const hrString = (hr) => hr !== null ? `<HeartRateBpm><Value>${Math.round(hr)}</Value></HeartRateBpm>` : '';
-const cadenceString = (cadence) => cadence !== null ? `<Cadence>${Math.round(cadence)}</Cadence>` : '';
+const hrString = (hr) =>
+    hr !== null ? `<HeartRateBpm><Value>${Math.round(hr)}</Value></HeartRateBpm>` : '';
+const cadenceString = (cadence) =>
+    cadence !== null ? `<Cadence>${Math.round(cadence)}</Cadence>` : '';
 const powerString = (power) => {
     if (power === null) return '';
     return `<Extensions>
@@ -10,7 +11,7 @@ const powerString = (power) => {
                 <Watts>${Math.round(power)}</Watts>
               </TPX>
             </Extensions>`;
-}
+};
 
 const getTcxTrackpoint = (point) => {
     const timestamp = new Date(point.timestamp).toISOString();
@@ -37,7 +38,7 @@ const getTcxTrackpoint = (point) => {
 </Trackpoint>
     `.trim();
     return tcx;
-}
+};
 
 /**
  * Creates a Garmin TCX (Training Center XML) string from merged measurements
@@ -74,4 +75,4 @@ ${dataPoints.map(getTcxTrackpoint).join('\n')}
     </TrainingCenterDatabase>`;
 
     return tcx;
-}
+};

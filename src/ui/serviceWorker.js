@@ -1,4 +1,4 @@
-import { registerSW } from 'virtual:pwa-register'
+import { registerSW } from 'virtual:pwa-register';
 
 export const registerServiceWorker = () => {
     // Don't register service worker in development to avoid caching issues
@@ -6,7 +6,7 @@ export const registerServiceWorker = () => {
         console.log('Service Worker disabled in development mode');
         // Unregister existing service workers if any to ensure fresh content
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(registrations => {
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
                 for (let registration of registrations) {
                     registration.unregister();
                     console.log('Unregistered existing service worker');
@@ -33,16 +33,19 @@ export const registerServiceWorker = () => {
 
             // Check for updates periodically (every hour)
             if (registration) {
-                setInterval(() => {
-                    registration.update();
-                }, 60 * 60 * 1000);
+                setInterval(
+                    () => {
+                        registration.update();
+                    },
+                    60 * 60 * 1000
+                );
             }
         },
         onRegisterError(error) {
             console.log('Service Worker registration failed:', error);
-        }
+        },
     });
-}
+};
 
 const showUpdateNotification = (updateSW) => {
     const updateContainer = document.getElementById('updateNotification');
@@ -50,13 +53,21 @@ const showUpdateNotification = (updateSW) => {
         updateContainer.style.display = 'block';
 
         const updateButton = document.getElementById('updateButton');
-        updateButton.addEventListener('click', () => {
-            updateSW(true); // Force reload after update
-        }, { once: true });
+        updateButton.addEventListener(
+            'click',
+            () => {
+                updateSW(true); // Force reload after update
+            },
+            { once: true }
+        );
 
         const dismissUpdateButton = document.getElementById('dismissUpdate');
-        dismissUpdateButton.addEventListener('click', () => {
-            updateContainer.style.display = 'none';
-        }, { once: true });
+        dismissUpdateButton.addEventListener(
+            'click',
+            () => {
+                updateContainer.style.display = 'none';
+            },
+            { once: true }
+        );
     }
 };

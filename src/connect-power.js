@@ -1,19 +1,18 @@
-
 export const connectPowerMock = async () => {
     const listeners = [];
     const powerInterval = setInterval(() => {
         const randomPower = Math.floor(Math.random() * 300) + 100; // 100-400W
         const entry = { timestamp: Date.now(), value: randomPower };
-        listeners.forEach(listener => listener(entry));
+        listeners.forEach((listener) => listener(entry));
     }, 100);
 
     return {
         disconnect: () => clearInterval(powerInterval),
         addListener: (callback) => {
             listeners.push(callback);
-        }
+        },
     };
-}
+};
 
 export const connectPowerBluetooth = async () => {
     const listeners = [];
@@ -21,7 +20,7 @@ export const connectPowerBluetooth = async () => {
     // Request Bluetooth device with cycling power service
     const device = await navigator.bluetooth.requestDevice({
         filters: [{ services: ['cycling_power'] }],
-        optionalServices: ['cycling_power']
+        optionalServices: ['cycling_power'],
     });
 
     // Connect to GATT server
@@ -42,7 +41,7 @@ export const connectPowerBluetooth = async () => {
         // Cycling power measurement format: bytes 2-3 contain instantaneous power (little-endian)
         const power = value.getInt16(2, true);
         const entry = { timestamp: Date.now(), value: power };
-        listeners.forEach(listener => listener(entry));
+        listeners.forEach((listener) => listener(entry));
     });
 
     return {
@@ -52,14 +51,13 @@ export const connectPowerBluetooth = async () => {
         },
         addListener: (callback) => {
             listeners.push(callback);
-        }
+        },
     };
-}
-
+};
 
 export const connectPower = async () => {
     if (import.meta.env.MODE === 'development' || import.meta.env.MODE === 'test') {
         return connectPowerMock();
     }
     return connectPowerBluetooth();
-}
+};

@@ -19,7 +19,6 @@ export const powerElement = getElement('power');
 export const heartrateElement = getElement('heartrate');
 export const cadenceElement = getElement('cadence');
 
-
 export const elements = {
     power: { display: powerElement, connect: connectPowerElem },
     heartrate: { display: heartrateElement, connect: connectHeartrateElem },

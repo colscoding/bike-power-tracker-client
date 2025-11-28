@@ -12,7 +12,7 @@ class MeasurementsState {
         }
         this.heartrate.push({
             timestamp: timestamp,
-            value: value
+            value: value,
         });
     }
 
@@ -23,7 +23,7 @@ class MeasurementsState {
         }
         this.power.push({
             timestamp: timestamp,
-            value: value
+            value: value,
         });
     }
 
@@ -34,7 +34,7 @@ class MeasurementsState {
         }
         this.cadence.push({
             timestamp: timestamp,
-            value: value
+            value: value,
         });
     }
 
@@ -52,5 +52,3 @@ class MeasurementsState {
 }
 
 export { MeasurementsState };
-
-

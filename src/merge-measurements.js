@@ -1,4 +1,3 @@
-
 export const getValuesAtTimestamps = (arr, timestamps) => {
     const entries = [];
     let index = 0;
@@ -17,7 +16,7 @@ export const getValuesAtTimestamps = (arr, timestamps) => {
         } else {
             const prevTime = arr?.[prevIndex]?.timestamp ?? 0;
             const nextTime = arr?.[index]?.timestamp ?? 0;
-            suggestedElem = (ts - prevTime) <= (nextTime - ts) ? arr?.[prevIndex] : arr?.[index];
+            suggestedElem = ts - prevTime <= nextTime - ts ? arr?.[prevIndex] : arr?.[index];
         }
         if (suggestedElem?.timestamp) {
             const distance = Math.abs(suggestedElem.timestamp - ts);
@@ -39,13 +38,15 @@ export const getValuesAtTimestamps = (arr, timestamps) => {
 
 export const mergeMeasurements = (measurements) => {
     const sources = [measurements.heartrate, measurements.cadence, measurements.power];
-    const hasData = sources.some(data => data.length > 0);
+    const hasData = sources.some((data) => data.length > 0);
     if (!hasData) {
         return [];
     }
-    const firstTimestamps = sources.map(data => data.length > 0 ? data[0].timestamp : Infinity);
+    const firstTimestamps = sources.map((data) => (data.length > 0 ? data[0].timestamp : Infinity));
     const startTime = Math.min(...firstTimestamps);
-    const endTime = Math.max(...sources.map(data => data.length > 0 ? data[data.length - 1].timestamp : -Infinity));
+    const endTime = Math.max(
+        ...sources.map((data) => (data.length > 0 ? data[data.length - 1].timestamp : -Infinity))
+    );
     const timeStep = 1000; // 1 second intervals
     const timestamps = [];
     let time = startTime;

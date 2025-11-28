@@ -1,4 +1,3 @@
-
 export const handleWakeLock = () => {
     // Keep screen awake during workout
     let wakeLock = null;
@@ -27,4 +26,4 @@ export const handleWakeLock = () => {
             requestWakeLock();
         }
     });
-}
+};

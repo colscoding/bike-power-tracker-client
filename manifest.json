@@ -11,11 +11,7 @@
     "orientation": "portrait-primary",
     "lang": "en",
     "dir": "ltr",
-    "categories": [
-        "health",
-        "fitness",
-        "sports"
-    ],
+    "categories": ["health", "fitness", "sports"],
     "icons": [
         {
             "src": "assets/icons/icon-72.png",

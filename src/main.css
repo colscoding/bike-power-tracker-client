@@ -169,7 +169,9 @@ main {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    transition: opacity 0.3s ease, filter 0.3s ease;
+    transition:
+        opacity 0.3s ease,
+        filter 0.3s ease;
     padding: 0 min(20px, 2vw) min(16px, 2vh);
     overflow: hidden;
 }
