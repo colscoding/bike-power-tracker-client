@@ -31,7 +31,9 @@ const showInstallButton = () => {
         installContainer.style.display = 'block';
 
         const installButton = document.getElementById('installButton');
-        installButton.addEventListener('click', async () => {
+        const dismissButton = document.getElementById('dismissInstall');
+
+        const handleInstall = async () => {
             if (!deferredPrompt) {
                 return;
             }
@@ -46,12 +48,15 @@ const showInstallButton = () => {
             // Clear the deferredPrompt
             deferredPrompt = null;
             hideInstallButton();
-        });
+        };
 
-        const dismissButton = document.getElementById('dismissInstall');
-        dismissButton.addEventListener('click', () => {
+        const handleDismiss = () => {
             hideInstallButton();
-        });
+        };
+
+        // Use { once: true } to automatically remove listener after first invocation
+        installButton.addEventListener('click', handleInstall, { once: true });
+        dismissButton.addEventListener('click', handleDismiss, { once: true });
     }
 };
 

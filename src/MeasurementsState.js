@@ -7,7 +7,6 @@ class MeasurementsState {
 
     addHeartrate({ timestamp, value }) {
         if (value <= 0 || value >= 300) {
-            console.warn(`Invalid heartrate value: ${value}`);
             return;
         }
         this.heartrate.push({
@@ -18,7 +17,6 @@ class MeasurementsState {
 
     addPower({ timestamp, value }) {
         if (value < 0 || value >= 3000) {
-            console.warn(`Invalid power value: ${value}`);
             return;
         }
         this.power.push({
@@ -29,7 +27,6 @@ class MeasurementsState {
 
     addCadence({ timestamp, value }) {
         if (value < 0 || value >= 300) {
-            console.warn(`Invalid cadence value: ${value}`);
             return;
         }
         this.cadence.push({

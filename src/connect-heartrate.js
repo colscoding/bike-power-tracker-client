@@ -14,26 +14,44 @@ export const connectHeartRateMock = async () => {
     };
 };
 
+import { showNotification } from './ui/notifications.js';
+
 export const connectHeartRateBluetooth = async () => {
     const listeners = [];
+    let device;
+    let characteristic;
 
-    // Request Bluetooth device with heart rate service
-    const device = await navigator.bluetooth.requestDevice({
-        filters: [{ services: ['heart_rate'] }],
-        optionalServices: ['heart_rate'],
-    });
+    try {
+        // Request Bluetooth device with heart rate service
+        device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: ['heart_rate'] }],
+            optionalServices: ['heart_rate'],
+        });
+    } catch (error) {
+        if (error.name === 'NotFoundError') {
+            showNotification('No heart rate monitor found or selection cancelled', 'error');
+        } else {
+            showNotification('Failed to search for heart rate monitor', 'error');
+        }
+        throw error;
+    }
 
-    // Connect to GATT server
-    const server = await device.gatt.connect();
+    try {
+        // Connect to GATT server
+        const server = await device.gatt.connect();
 
-    // Get heart rate service
-    const service = await server.getPrimaryService('heart_rate');
+        // Get heart rate service
+        const service = await server.getPrimaryService('heart_rate');
 
-    // Get heart rate measurement characteristic
-    const characteristic = await service.getCharacteristic('heart_rate_measurement');
+        // Get heart rate measurement characteristic
+        characteristic = await service.getCharacteristic('heart_rate_measurement');
 
-    // Start notifications
-    await characteristic.startNotifications();
+        // Start notifications
+        await characteristic.startNotifications();
+    } catch (error) {
+        showNotification('Failed to connect to heart rate monitor', 'error');
+        throw error;
+    }
 
     // Listen for heart rate changes
     characteristic.addEventListener('characteristicvaluechanged', (event) => {
@@ -56,8 +74,12 @@ export const connectHeartRateBluetooth = async () => {
 
     return {
         disconnect: () => {
-            characteristic.stopNotifications();
-            device.gatt.disconnect();
+            try {
+                characteristic.stopNotifications();
+                device.gatt.disconnect();
+            } catch {
+                // Ignore disconnect errors - device may already be disconnected
+            }
         },
         addListener: (callback) => {
             listeners.push(callback);

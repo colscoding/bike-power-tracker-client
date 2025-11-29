@@ -14,28 +14,46 @@ export const connectCadenceMock = async () => {
     };
 };
 
+import { showNotification } from './ui/notifications.js';
+
 export const connectCadenceBluetooth = async () => {
     const listeners = [];
     let lastCrankRevs = null;
     let lastCrankTime = null;
+    let device;
+    let characteristic;
 
-    // Request Bluetooth device with cycling speed and cadence service
-    const device = await navigator.bluetooth.requestDevice({
-        filters: [{ services: ['cycling_speed_and_cadence'] }],
-        optionalServices: ['cycling_speed_and_cadence'],
-    });
+    try {
+        // Request Bluetooth device with cycling speed and cadence service
+        device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: ['cycling_speed_and_cadence'] }],
+            optionalServices: ['cycling_speed_and_cadence'],
+        });
+    } catch (error) {
+        if (error.name === 'NotFoundError') {
+            showNotification('No cadence sensor found or selection cancelled', 'error');
+        } else {
+            showNotification('Failed to search for cadence sensor', 'error');
+        }
+        throw error;
+    }
 
-    // Connect to GATT server
-    const server = await device.gatt.connect();
+    try {
+        // Connect to GATT server
+        const server = await device.gatt.connect();
 
-    // Get cycling speed and cadence service
-    const service = await server.getPrimaryService('cycling_speed_and_cadence');
+        // Get cycling speed and cadence service
+        const service = await server.getPrimaryService('cycling_speed_and_cadence');
 
-    // Get CSC measurement characteristic
-    const characteristic = await service.getCharacteristic('csc_measurement');
+        // Get CSC measurement characteristic
+        characteristic = await service.getCharacteristic('csc_measurement');
 
-    // Start notifications
-    await characteristic.startNotifications();
+        // Start notifications
+        await characteristic.startNotifications();
+    } catch (error) {
+        showNotification('Failed to connect to cadence sensor', 'error');
+        throw error;
+    }
 
     // Listen for cadence changes
     characteristic.addEventListener('characteristicvaluechanged', (event) => {
@@ -88,8 +106,12 @@ export const connectCadenceBluetooth = async () => {
 
     return {
         disconnect: () => {
-            characteristic.stopNotifications();
-            device.gatt.disconnect();
+            try {
+                characteristic.stopNotifications();
+                device.gatt.disconnect();
+            } catch {
+                // Ignore disconnect errors - device may already be disconnected
+            }
         },
         addListener: (callback) => {
             listeners.push(callback);
