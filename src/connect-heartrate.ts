@@ -1,8 +1,12 @@
-export const connectHeartRateMock = async () => {
-    const listeners = [];
+import { getEnvMode } from './getEnvMode.js';
+import type { Measurement, SensorConnection } from './types/index.js';
+import { showNotification } from './ui/notifications.js';
+
+export const connectHeartRateMock = async (): Promise<SensorConnection> => {
+    const listeners: ((entry: Measurement) => void)[] = [];
     const heartRateInterval = setInterval(() => {
         const randomHeartRate = Math.floor(Math.random() * 80) + 120; // 120-200 bpm
-        const entry = { timestamp: Date.now(), value: randomHeartRate };
+        const entry: Measurement = { timestamp: Date.now(), value: randomHeartRate };
         listeners.forEach((listener) => listener(entry));
     }, 1000);
 
@@ -14,12 +18,10 @@ export const connectHeartRateMock = async () => {
     };
 };
 
-import { showNotification } from './ui/notifications.js';
-
-export const connectHeartRateBluetooth = async () => {
-    const listeners = [];
-    let device;
-    let characteristic;
+export const connectHeartRateBluetooth = async (): Promise<SensorConnection> => {
+    const listeners: ((entry: Measurement) => void)[] = [];
+    let device: BluetoothDevice;
+    let characteristic: BluetoothRemoteGATTCharacteristic;
 
     try {
         // Request Bluetooth device with heart rate service
@@ -28,7 +30,7 @@ export const connectHeartRateBluetooth = async () => {
             optionalServices: ['heart_rate'],
         });
     } catch (error) {
-        if (error.name === 'NotFoundError') {
+        if (error instanceof Error && error.name === 'NotFoundError') {
             showNotification('No heart rate monitor found or selection cancelled', 'error');
         } else {
             showNotification('Failed to search for heart rate monitor', 'error');
@@ -38,7 +40,7 @@ export const connectHeartRateBluetooth = async () => {
 
     try {
         // Connect to GATT server
-        const server = await device.gatt.connect();
+        const server = await device.gatt!.connect();
 
         // Get heart rate service
         const service = await server.getPrimaryService('heart_rate');
@@ -55,9 +57,10 @@ export const connectHeartRateBluetooth = async () => {
 
     // Listen for heart rate changes
     characteristic.addEventListener('characteristicvaluechanged', (event) => {
-        const value = event.target.value;
+        const target = event.target as BluetoothRemoteGATTCharacteristic;
+        const value = target.value!;
         const flags = value.getUint8(0);
-        let heartRate;
+        let heartRate: number;
 
         // Check Heart Rate Value Format bit (bit 0)
         if (flags & 0x01) {
@@ -68,7 +71,7 @@ export const connectHeartRateBluetooth = async () => {
             heartRate = value.getUint8(1);
         }
 
-        const entry = { timestamp: Date.now(), value: heartRate };
+        const entry: Measurement = { timestamp: Date.now(), value: heartRate };
         listeners.forEach((listener) => listener(entry));
     });
 
@@ -76,7 +79,7 @@ export const connectHeartRateBluetooth = async () => {
         disconnect: () => {
             try {
                 characteristic.stopNotifications();
-                device.gatt.disconnect();
+                device.gatt!.disconnect();
             } catch {
                 // Ignore disconnect errors - device may already be disconnected
             }
@@ -87,8 +90,9 @@ export const connectHeartRateBluetooth = async () => {
     };
 };
 
-export const connectHeartRate = async () => {
-    if (import.meta.env.MODE === 'development' || import.meta.env.MODE === 'test') {
+export const connectHeartRate = async (): Promise<SensorConnection> => {
+    const mode = getEnvMode();
+    if (mode === 'development' || mode === 'test') {
         return connectHeartRateMock();
     }
     // Production implementation would go here

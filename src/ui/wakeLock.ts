@@ -1,7 +1,7 @@
-export const handleWakeLock = () => {
+export const handleWakeLock = (): void => {
     // Keep screen awake during workout
-    let wakeLock = null;
-    const requestWakeLock = async () => {
+    let wakeLock: WakeLockSentinel | null = null;
+    const requestWakeLock = async (): Promise<void> => {
         try {
             if ('wakeLock' in navigator) {
                 wakeLock = await navigator.wakeLock.request('screen');

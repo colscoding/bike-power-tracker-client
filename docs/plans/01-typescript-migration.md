@@ -5,7 +5,9 @@
 Migrate the codebase from JavaScript to TypeScript for improved type safety, better IDE support, and reduced runtime errors.
 
 ## Priority: Medium
+
 ## Effort: Large (2-3 weeks)
+
 ## Breaking Changes: None (TypeScript compiles to JavaScript)
 
 ---
@@ -29,31 +31,32 @@ pnpm add -D typescript @types/node
 ```
 
 **Create `tsconfig.json`:**
+
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "noEmit": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  },
-  "include": ["src/**/*", "vite.config.ts"],
-  "exclude": ["node_modules", "dist"]
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "noEmit": true,
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "types": ["vite/client"],
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        }
+    },
+    "include": ["src/**/*", "vite.config.ts"],
+    "exclude": ["node_modules", "dist"]
 }
 ```
 
@@ -66,49 +69,49 @@ Create `src/types/index.ts`:
 ```typescript
 // Measurement types
 export interface Measurement {
-  timestamp: number;
-  value: number;
+    timestamp: number;
+    value: number;
 }
 
 export type MetricType = 'power' | 'heartrate' | 'cadence';
 
 export interface MergedDataPoint {
-  timestamp: number;
-  power: number | null;
-  heartrate: number | null;
-  cadence: number | null;
+    timestamp: number;
+    power: number | null;
+    heartrate: number | null;
+    cadence: number | null;
 }
 
 // Connection types
 export interface ConnectionState {
-  isConnected: boolean;
-  disconnect: (() => void) | null;
+    isConnected: boolean;
+    disconnect: (() => void) | null;
 }
 
 export interface ConnectionsState {
-  power: ConnectionState;
-  heartrate: ConnectionState;
-  cadence: ConnectionState;
+    power: ConnectionState;
+    heartrate: ConnectionState;
+    cadence: ConnectionState;
 }
 
 // Time state
 export interface TimeState {
-  running: boolean;
-  startTime: number | null;
-  endTime: number | null;
+    running: boolean;
+    startTime: number | null;
+    endTime: number | null;
 }
 
 // Bluetooth sensor connection result
 export interface SensorConnection {
-  disconnect: () => void;
-  addListener: (callback: (entry: Measurement) => void) => void;
+    disconnect: () => void;
+    addListener: (callback: (entry: Measurement) => void) => void;
 }
 
 // Settings
 export interface AppSettings {
-  power: boolean;
-  cadence: boolean;
-  heartrate: boolean;
+    power: boolean;
+    cadence: boolean;
+    heartrate: boolean;
 }
 ```
 
@@ -117,30 +120,30 @@ export interface AppSettings {
 **Migration Order (by dependency depth):**
 
 1. **Standalone utilities (no dependencies)**
-   - `src/getTimestring.ts`
-   - `src/merge-measurements.ts`
+    - `src/getTimestring.ts`
+    - `src/merge-measurements.ts`
 
 2. **Core state management**
-   - `src/MeasurementsState.ts`
-   - `src/getInitState.ts`
+    - `src/MeasurementsState.ts`
+    - `src/getInitState.ts`
 
 3. **Data export**
-   - `src/create-csv.ts`
-   - `src/create-tcx.ts`
+    - `src/create-csv.ts`
+    - `src/create-tcx.ts`
 
 4. **Bluetooth connections**
-   - `src/connect-power.ts`
-   - `src/connect-heartrate.ts`
-   - `src/connect-cadence.ts`
+    - `src/connect-power.ts`
+    - `src/connect-heartrate.ts`
+    - `src/connect-cadence.ts`
 
 5. **UI components**
-   - `src/elements.ts`
-   - `src/initMetricsDisplay.ts`
-   - `src/initConnectionButtons.ts`
-   - `src/ui/*.ts`
+    - `src/elements.ts`
+    - `src/initMetricsDisplay.ts`
+    - `src/initConnectionButtons.ts`
+    - `src/ui/*.ts`
 
 6. **Main entry**
-   - `src/main.ts`
+    - `src/main.ts`
 
 ### Phase 4: Strict Mode & Cleanup (Days 11-14)
 
@@ -151,19 +154,20 @@ export interface AppSettings {
 5. Update ESLint for TypeScript
 
 **ESLint Configuration (`eslint.config.js`):**
+
 ```javascript
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  // ... existing config
-  ...tseslint.configs.recommended,
-  {
-    rules: {
-      '@typescript-eslint/explicit-function-return-type': 'warn',
-      '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/no-explicit-any': 'warn',
-    },
-  }
+    // ... existing config
+    ...tseslint.configs.recommended,
+    {
+        rules: {
+            '@typescript-eslint/explicit-function-return-type': 'warn',
+            '@typescript-eslint/no-unused-vars': 'error',
+            '@typescript-eslint/no-explicit-any': 'warn',
+        },
+    }
 );
 ```
 
@@ -175,14 +179,22 @@ export default tseslint.config(
 
 ```typescript
 class MeasurementsState {
-  heartrate: Measurement[] = [];
-  power: Measurement[] = [];
-  cadence: Measurement[] = [];
+    heartrate: Measurement[] = [];
+    power: Measurement[] = [];
+    cadence: Measurement[] = [];
 
-  addHeartrate(entry: Measurement): void { /* ... */ }
-  addPower(entry: Measurement): void { /* ... */ }
-  addCadence(entry: Measurement): void { /* ... */ }
-  add(type: MetricType, entry: Measurement): void { /* ... */ }
+    addHeartrate(entry: Measurement): void {
+        /* ... */
+    }
+    addPower(entry: Measurement): void {
+        /* ... */
+    }
+    addCadence(entry: Measurement): void {
+        /* ... */
+    }
+    add(type: MetricType, entry: Measurement): void {
+        /* ... */
+    }
 }
 ```
 
@@ -213,12 +225,12 @@ import { describe, it, expect } from 'vitest';
 import { MeasurementsState } from './MeasurementsState';
 
 describe('MeasurementsState', () => {
-  it('should add power measurement', () => {
-    const state = new MeasurementsState();
-    const measurement: Measurement = { timestamp: Date.now(), value: 250 };
-    state.addPower(measurement);
-    expect(state.power).toHaveLength(1);
-  });
+    it('should add power measurement', () => {
+        const state = new MeasurementsState();
+        const measurement: Measurement = { timestamp: Date.now(), value: 250 };
+        state.addPower(measurement);
+        expect(state.power).toHaveLength(1);
+    });
 });
 ```
 
@@ -226,12 +238,12 @@ describe('MeasurementsState', () => {
 
 ## Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| Build breaks during migration | Migrate one file at a time, keep tests passing |
-| Web Bluetooth types incomplete | Use `@types/web-bluetooth` or custom declarations |
-| Increased bundle size | TypeScript compiles away, no runtime cost |
-| Learning curve | Types are optional initially, can be strict over time |
+| Risk                           | Mitigation                                            |
+| ------------------------------ | ----------------------------------------------------- |
+| Build breaks during migration  | Migrate one file at a time, keep tests passing        |
+| Web Bluetooth types incomplete | Use `@types/web-bluetooth` or custom declarations     |
+| Increased bundle size          | TypeScript compiles away, no runtime cost             |
+| Learning curve                 | Types are optional initially, can be strict over time |
 
 ---
 

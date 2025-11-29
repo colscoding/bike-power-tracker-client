@@ -1,9 +1,10 @@
 import { getTimestring } from '../getTimestring.js';
+import type { TimeState } from '../types/index.js';
 
-export const initTimerDisplay = (timeState) => {
-    const startStopButton = document.getElementById('startStop');
-    const timeElement = document.getElementById('time');
-    const metricsTable = document.getElementById('metricsTable');
+export const initTimerDisplay = (timeState: TimeState): void => {
+    const startStopButton = document.getElementById('startStop')!;
+    const timeElement = document.getElementById('time')!;
+    const metricsTable = document.getElementById('metricsTable')!;
 
     setInterval(() => {
         let nextText = '00:00:00';
@@ -44,7 +45,7 @@ export const initTimerDisplay = (timeState) => {
             if (timeState.endTime) {
                 // Resuming - adjust startTime to account for time stopped
                 const stoppedDuration = Date.now() - timeState.endTime;
-                timeState.startTime += stoppedDuration;
+                timeState.startTime! += stoppedDuration;
                 timeState.endTime = null;
             } else {
                 // Starting fresh

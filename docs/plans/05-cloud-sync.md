@@ -5,7 +5,9 @@
 Add optional backend services for cloud synchronization, enabling workout data to be stored and accessed across devices.
 
 ## Priority: Low
+
 ## Effort: Extra Large (6-8 weeks)
+
 ## Type: Backend Feature
 
 ---
@@ -25,12 +27,14 @@ Add optional backend services for cloud synchronization, enabling workout data t
 ### Option A: Firebase (Fastest to Implement)
 
 **Pros:**
+
 - No server to manage
 - Built-in auth (Google, email, etc.)
 - Real-time sync
 - Free tier sufficient for personal use
 
 **Cons:**
+
 - Vendor lock-in
 - Costs can scale with users
 - Less control over data
@@ -38,12 +42,14 @@ Add optional backend services for cloud synchronization, enabling workout data t
 ### Option B: Self-Hosted (Most Control)
 
 **Pros:**
+
 - Full data ownership
 - Complete customization
 - No vendor lock-in
 - Can run on cheap VPS
 
 **Cons:**
+
 - More setup/maintenance
 - Need to handle auth, scaling
 - More initial development
@@ -51,6 +57,7 @@ Add optional backend services for cloud synchronization, enabling workout data t
 ### Option C: Hybrid (Best Balance)
 
 Use a lightweight backend (Hono, Fastify) with:
+
 - Auth0 or Clerk for authentication
 - Cloudflare D1 or Turso for edge database
 - R2/S3 for file storage
@@ -190,112 +197,132 @@ app.get('/health', (c) => c.json({ status: 'ok' }));
 
 // Workout routes
 app.get('/api/workouts', async (c) => {
-  const userId = c.get('jwtPayload').sub;
-  
-  const { results } = await c.env.DB.prepare(`
+    const userId = c.get('jwtPayload').sub;
+
+    const { results } = await c.env.DB.prepare(
+        `
     SELECT id, started_at, duration_seconds, title, summary
     FROM workouts
     WHERE user_id = ? AND deleted_at IS NULL
     ORDER BY started_at DESC
     LIMIT 100
-  `).bind(userId).all();
-  
-  return c.json(results);
+  `
+    )
+        .bind(userId)
+        .all();
+
+    return c.json(results);
 });
 
 app.get('/api/workouts/:id', async (c) => {
-  const userId = c.get('jwtPayload').sub;
-  const workoutId = c.req.param('id');
-  
-  // Get workout
-  const workout = await c.env.DB.prepare(`
+    const userId = c.get('jwtPayload').sub;
+    const workoutId = c.req.param('id');
+
+    // Get workout
+    const workout = await c.env.DB.prepare(
+        `
     SELECT * FROM workouts 
     WHERE id = ? AND user_id = ? AND deleted_at IS NULL
-  `).bind(workoutId, userId).first();
-  
-  if (!workout) {
-    return c.json({ error: 'Not found' }, 404);
-  }
-  
-  // Get measurements
-  const { results: measurements } = await c.env.DB.prepare(`
+  `
+    )
+        .bind(workoutId, userId)
+        .first();
+
+    if (!workout) {
+        return c.json({ error: 'Not found' }, 404);
+    }
+
+    // Get measurements
+    const { results: measurements } = await c.env.DB.prepare(
+        `
     SELECT timestamp, power, heartrate, cadence
     FROM measurements
     WHERE workout_id = ?
     ORDER BY timestamp ASC
-  `).bind(workoutId).all();
-  
-  return c.json({ ...workout, measurements });
+  `
+    )
+        .bind(workoutId)
+        .all();
+
+    return c.json({ ...workout, measurements });
 });
 
 app.post('/api/workouts', async (c) => {
-  const userId = c.get('jwtPayload').sub;
-  const body = await c.req.json();
-  
-  const id = crypto.randomUUID();
-  
-  // Insert workout
-  await c.env.DB.prepare(`
+    const userId = c.get('jwtPayload').sub;
+    const body = await c.req.json();
+
+    const id = crypto.randomUUID();
+
+    // Insert workout
+    await c.env.DB.prepare(
+        `
     INSERT INTO workouts (id, user_id, local_id, started_at, ended_at, 
                           duration_seconds, title, summary)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    id, 
-    userId, 
-    body.localId,
-    body.startedAt, 
-    body.endedAt,
-    body.durationSeconds,
-    body.title || '',
-    JSON.stringify(body.summary)
-  ).run();
-  
-  // Insert measurements in batches
-  if (body.measurements?.length) {
-    const batchSize = 100;
-    for (let i = 0; i < body.measurements.length; i += batchSize) {
-      const batch = body.measurements.slice(i, i + batchSize);
-      const stmt = c.env.DB.prepare(`
+  `
+    )
+        .bind(
+            id,
+            userId,
+            body.localId,
+            body.startedAt,
+            body.endedAt,
+            body.durationSeconds,
+            body.title || '',
+            JSON.stringify(body.summary)
+        )
+        .run();
+
+    // Insert measurements in batches
+    if (body.measurements?.length) {
+        const batchSize = 100;
+        for (let i = 0; i < body.measurements.length; i += batchSize) {
+            const batch = body.measurements.slice(i, i + batchSize);
+            const stmt = c.env.DB.prepare(`
         INSERT INTO measurements (workout_id, timestamp, power, heartrate, cadence)
         VALUES (?, ?, ?, ?, ?)
       `);
-      
-      await c.env.DB.batch(
-        batch.map(m => stmt.bind(id, m.timestamp, m.power, m.heartrate, m.cadence))
-      );
+
+            await c.env.DB.batch(
+                batch.map((m) => stmt.bind(id, m.timestamp, m.power, m.heartrate, m.cadence))
+            );
+        }
     }
-  }
-  
-  return c.json({ id }, 201);
+
+    return c.json({ id }, 201);
 });
 
 // Sync endpoint
 app.post('/api/workouts/sync', async (c) => {
-  const userId = c.get('jwtPayload').sub;
-  const { lastSyncAt, changes } = await c.req.json();
-  
-  // Process incoming changes
-  for (const change of changes) {
-    if (change.action === 'create') {
-      // Check if already exists (by localId)
-      // Create or update accordingly
-    } else if (change.action === 'update') {
-      // Update if server version is older
-    } else if (change.action === 'delete') {
-      // Soft delete
+    const userId = c.get('jwtPayload').sub;
+    const { lastSyncAt, changes } = await c.req.json();
+
+    // Process incoming changes
+    for (const change of changes) {
+        if (change.action === 'create') {
+            // Check if already exists (by localId)
+            // Create or update accordingly
+        } else if (change.action === 'update') {
+            // Update if server version is older
+        } else if (change.action === 'delete') {
+            // Soft delete
+        }
     }
-  }
-  
-  // Get server changes since lastSyncAt
-  const { results: serverChanges } = await c.env.DB.prepare(`
+
+    // Get server changes since lastSyncAt
+    const { results: serverChanges } = await c.env.DB.prepare(
+        `
     SELECT * FROM workouts
     WHERE user_id = ? AND synced_at > ?
-  `).bind(userId, lastSyncAt || '1970-01-01').all();
-  
-  return c.json({
-    syncedAt: new Date().toISOString(),
-    changes: serverChanges
-  });
+  `
+    )
+        .bind(userId, lastSyncAt || '1970-01-01')
+        .all();
+
+    return c.json({
+        syncedAt: new Date().toISOString(),
+        changes: serverChanges,
+    });
 });
 
 export default app;
@@ -309,87 +336,90 @@ export default app;
 // src/services/sync.js
 
 export class SyncService {
-  constructor(apiUrl) {
-    this.apiUrl = apiUrl;
-    this.token = null;
-    this.lastSyncAt = null;
-  }
-  
-  async authenticate(email, password) {
-    const res = await fetch(`${this.apiUrl}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    
-    if (!res.ok) throw new Error('Authentication failed');
-    
-    const { token, expiresAt } = await res.json();
-    this.token = token;
-    localStorage.setItem('sync_token', token);
-    localStorage.setItem('sync_token_expires', expiresAt);
-    
-    return true;
-  }
-  
-  async sync(localWorkouts) {
-    if (!this.token) return { success: false, error: 'Not authenticated' };
-    
-    try {
-      // Find local changes since last sync
-      const changes = localWorkouts
-        .filter(w => !w.syncedAt || w.updatedAt > w.syncedAt)
-        .map(w => ({
-          action: w.deletedAt ? 'delete' : (w.syncedAt ? 'update' : 'create'),
-          localId: w.id,
-          ...w
-        }));
-      
-      const res = await fetch(`${this.apiUrl}/api/workouts/sync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`
-        },
-        body: JSON.stringify({
-          lastSyncAt: this.lastSyncAt,
-          changes
-        })
-      });
-      
-      if (!res.ok) throw new Error('Sync failed');
-      
-      const { syncedAt, changes: serverChanges } = await res.json();
-      
-      this.lastSyncAt = syncedAt;
-      localStorage.setItem('lastSyncAt', syncedAt);
-      
-      return { success: true, serverChanges };
-    } catch (error) {
-      return { success: false, error: error.message };
+    constructor(apiUrl) {
+        this.apiUrl = apiUrl;
+        this.token = null;
+        this.lastSyncAt = null;
     }
-  }
-  
-  // Automatic background sync
-  startAutoSync(localWorkoutsGetter, onServerChanges) {
-    // Sync when online
-    window.addEventListener('online', async () => {
-      const result = await this.sync(localWorkoutsGetter());
-      if (result.serverChanges?.length) {
-        onServerChanges(result.serverChanges);
-      }
-    });
-    
-    // Periodic sync every 5 minutes
-    setInterval(async () => {
-      if (navigator.onLine && this.token) {
-        const result = await this.sync(localWorkoutsGetter());
-        if (result.serverChanges?.length) {
-          onServerChanges(result.serverChanges);
+
+    async authenticate(email, password) {
+        const res = await fetch(`${this.apiUrl}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+
+        if (!res.ok) throw new Error('Authentication failed');
+
+        const { token, expiresAt } = await res.json();
+        this.token = token;
+        localStorage.setItem('sync_token', token);
+        localStorage.setItem('sync_token_expires', expiresAt);
+
+        return true;
+    }
+
+    async sync(localWorkouts) {
+        if (!this.token) return { success: false, error: 'Not authenticated' };
+
+        try {
+            // Find local changes since last sync
+            const changes = localWorkouts
+                .filter((w) => !w.syncedAt || w.updatedAt > w.syncedAt)
+                .map((w) => ({
+                    action: w.deletedAt ? 'delete' : w.syncedAt ? 'update' : 'create',
+                    localId: w.id,
+                    ...w,
+                }));
+
+            const res = await fetch(`${this.apiUrl}/api/workouts/sync`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${this.token}`,
+                },
+                body: JSON.stringify({
+                    lastSyncAt: this.lastSyncAt,
+                    changes,
+                }),
+            });
+
+            if (!res.ok) throw new Error('Sync failed');
+
+            const { syncedAt, changes: serverChanges } = await res.json();
+
+            this.lastSyncAt = syncedAt;
+            localStorage.setItem('lastSyncAt', syncedAt);
+
+            return { success: true, serverChanges };
+        } catch (error) {
+            return { success: false, error: error.message };
         }
-      }
-    }, 5 * 60 * 1000);
-  }
+    }
+
+    // Automatic background sync
+    startAutoSync(localWorkoutsGetter, onServerChanges) {
+        // Sync when online
+        window.addEventListener('online', async () => {
+            const result = await this.sync(localWorkoutsGetter());
+            if (result.serverChanges?.length) {
+                onServerChanges(result.serverChanges);
+            }
+        });
+
+        // Periodic sync every 5 minutes
+        setInterval(
+            async () => {
+                if (navigator.onLine && this.token) {
+                    const result = await this.sync(localWorkoutsGetter());
+                    if (result.serverChanges?.length) {
+                        onServerChanges(result.serverChanges);
+                    }
+                }
+            },
+            5 * 60 * 1000
+        );
+    }
 }
 ```
 
@@ -398,37 +428,36 @@ export class SyncService {
 ## Conflict Resolution Strategy
 
 ### Last-Write-Wins (Simple)
+
 ```javascript
 function resolveConflict(local, server) {
-  return new Date(local.updatedAt) > new Date(server.updatedAt) 
-    ? local 
-    : server;
+    return new Date(local.updatedAt) > new Date(server.updatedAt) ? local : server;
 }
 ```
 
 ### Merge Strategy (Better for Measurements)
+
 ```javascript
 function mergeWorkout(local, server) {
-  // Keep the newer metadata
-  const base = resolveConflict(local, server);
-  
-  // Merge measurements (union of both, deduplicated by timestamp)
-  const measurementMap = new Map();
-  
-  [...local.measurements, ...server.measurements].forEach(m => {
-    const key = m.timestamp;
-    if (!measurementMap.has(key) || 
-        (m.power && !measurementMap.get(key).power)) {
-      measurementMap.set(key, m);
-    }
-  });
-  
-  return {
-    ...base,
-    measurements: [...measurementMap.values()].sort(
-      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-    )
-  };
+    // Keep the newer metadata
+    const base = resolveConflict(local, server);
+
+    // Merge measurements (union of both, deduplicated by timestamp)
+    const measurementMap = new Map();
+
+    [...local.measurements, ...server.measurements].forEach((m) => {
+        const key = m.timestamp;
+        if (!measurementMap.has(key) || (m.power && !measurementMap.get(key).power)) {
+            measurementMap.set(key, m);
+        }
+    });
+
+    return {
+        ...base,
+        measurements: [...measurementMap.values()].sort(
+            (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+        ),
+    };
 }
 ```
 
@@ -480,6 +509,7 @@ function mergeWorkout(local, server) {
 ## Deployment Options
 
 ### Cloudflare Workers (Recommended)
+
 ```bash
 # Install Wrangler
 npm install -g wrangler
@@ -492,6 +522,7 @@ wrangler deploy
 ```
 
 ### Railway
+
 ```yaml
 # railway.toml
 [build]
@@ -502,6 +533,7 @@ startCommand = "npm start"
 ```
 
 ### Fly.io
+
 ```dockerfile
 # Dockerfile
 FROM node:20-alpine
@@ -527,21 +559,25 @@ CMD ["node", "server.js"]
 ## Implementation Phases
 
 ### Phase 1: Anonymous Backend (2 weeks)
+
 - Basic API without auth
 - Manual export/import
 - Proof of concept
 
 ### Phase 2: Authentication (2 weeks)
+
 - User registration/login
 - JWT-based auth
 - Basic sync
 
 ### Phase 3: Full Sync (2 weeks)
+
 - Conflict resolution
 - Background sync
 - Offline queue
 
 ### Phase 4: Polish (2 weeks)
+
 - Sharing features
 - Data export
 - Account management
@@ -551,11 +587,13 @@ CMD ["node", "server.js"]
 ## Cost Estimates
 
 ### Cloudflare Workers (Free Tier)
+
 - 100,000 requests/day free
 - D1: 5GB free storage
 - Estimated: $0 for personal use
 
 ### Scaling Costs
+
 - Workers Paid: $5/mo + $0.50/million requests
 - D1 Paid: $0.75/million reads, $1.00/million writes
 - Estimated: $5-20/mo for ~1000 active users

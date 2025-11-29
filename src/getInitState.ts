@@ -1,6 +1,7 @@
 import { MeasurementsState } from './MeasurementsState.js';
+import type { AppState } from './types/index.js';
 
-export const getInitState = () => {
+export const getInitState = (): AppState => {
     return {
         measurementsState: new MeasurementsState(),
         connectionsState: {

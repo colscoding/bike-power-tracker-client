@@ -1,7 +1,17 @@
 import { elements } from './elements.js';
+import type { ConnectionsState, MetricType } from './types/index.js';
+import type { MeasurementsState } from './MeasurementsState.js';
 
-export const initMetricsDisplay = ({ connectionsState, measurementsState }) => {
-    const updateMetricDisplay = (key) => {
+interface MetricsDisplayParams {
+    connectionsState: ConnectionsState;
+    measurementsState: MeasurementsState;
+}
+
+export const initMetricsDisplay = ({
+    connectionsState,
+    measurementsState,
+}: MetricsDisplayParams): void => {
+    const updateMetricDisplay = (key: MetricType): void => {
         const element = elements?.[key]?.display;
         if (!element || !connectionsState?.[key]) {
             return;
@@ -33,10 +43,10 @@ export const initMetricsDisplay = ({ connectionsState, measurementsState }) => {
             return;
         }
 
-        element.textContent = latestMeasurement.value;
+        element.textContent = String(latestMeasurement.value);
     };
 
-    const metricTypes = ['power', 'heartrate', 'cadence'];
+    const metricTypes: MetricType[] = ['power', 'heartrate', 'cadence'];
     // Start the event loop
     setInterval(() => {
         metricTypes.forEach(updateMetricDisplay);

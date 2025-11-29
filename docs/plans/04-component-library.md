@@ -5,7 +5,9 @@
 Refactor the UI into reusable Web Components for better maintainability, encapsulation, and potential reuse across projects.
 
 ## Priority: Low
+
 ## Effort: Large (3-4 weeks)
+
 ## Type: Code Architecture
 
 ---
@@ -23,6 +25,7 @@ Refactor the UI into reusable Web Components for better maintainability, encapsu
 ## Current State
 
 The current UI is a mix of:
+
 - Inline HTML in `index.html`
 - DOM manipulation in various JS files
 - CSS in a single `main.css` file
@@ -63,70 +66,72 @@ src/
 // src/components/base/BaseComponent.js
 
 export class BaseComponent extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-  }
-  
-  // Lifecycle: Called when added to DOM
-  connectedCallback() {
-    this.render();
-    this.setupEventListeners();
-  }
-  
-  // Lifecycle: Called when removed from DOM
-  disconnectedCallback() {
-    this.cleanup();
-  }
-  
-  // Lifecycle: Called when attributes change
-  static get observedAttributes() {
-    return [];
-  }
-  
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue !== newValue) {
-      this.render();
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
     }
-  }
-  
-  // Override in subclasses
-  render() {
-    this.shadowRoot.innerHTML = `
+
+    // Lifecycle: Called when added to DOM
+    connectedCallback() {
+        this.render();
+        this.setupEventListeners();
+    }
+
+    // Lifecycle: Called when removed from DOM
+    disconnectedCallback() {
+        this.cleanup();
+    }
+
+    // Lifecycle: Called when attributes change
+    static get observedAttributes() {
+        return [];
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue !== newValue) {
+            this.render();
+        }
+    }
+
+    // Override in subclasses
+    render() {
+        this.shadowRoot.innerHTML = `
       <style>${this.styles()}</style>
       ${this.template()}
     `;
-  }
-  
-  styles() {
-    return '';
-  }
-  
-  template() {
-    return '';
-  }
-  
-  setupEventListeners() {}
-  
-  cleanup() {}
-  
-  // Utility: Emit custom event
-  emit(eventName, detail = {}) {
-    this.dispatchEvent(new CustomEvent(eventName, {
-      bubbles: true,
-      composed: true, // Crosses shadow DOM boundary
-      detail
-    }));
-  }
-  
-  // Utility: Query shadow DOM
-  $(selector) {
-    return this.shadowRoot.querySelector(selector);
-  }
-  
-  $$(selector) {
-    return this.shadowRoot.querySelectorAll(selector);
-  }
+    }
+
+    styles() {
+        return '';
+    }
+
+    template() {
+        return '';
+    }
+
+    setupEventListeners() {}
+
+    cleanup() {}
+
+    // Utility: Emit custom event
+    emit(eventName, detail = {}) {
+        this.dispatchEvent(
+            new CustomEvent(eventName, {
+                bubbles: true,
+                composed: true, // Crosses shadow DOM boundary
+                detail,
+            })
+        );
+    }
+
+    // Utility: Query shadow DOM
+    $(selector) {
+        return this.shadowRoot.querySelector(selector);
+    }
+
+    $$(selector) {
+        return this.shadowRoot.querySelectorAll(selector);
+    }
 }
 ```
 
@@ -142,33 +147,33 @@ export class BaseComponent extends HTMLElement {
 import { BaseComponent } from '../base/BaseComponent.js';
 
 export class MetricDisplay extends BaseComponent {
-  static get observedAttributes() {
-    return ['type', 'value', 'connected'];
-  }
-  
-  get type() {
-    return this.getAttribute('type') || 'power';
-  }
-  
-  get value() {
-    return this.getAttribute('value') || '--';
-  }
-  
-  get connected() {
-    return this.hasAttribute('connected');
-  }
-  
-  get config() {
-    const configs = {
-      power: { label: 'Power', unit: 'W', emoji: '⚡', color: '#FFD700' },
-      heartrate: { label: 'Heart Rate', unit: 'bpm', emoji: '❤️', color: '#FF4444' },
-      cadence: { label: 'Cadence', unit: 'rpm', emoji: '🚴', color: '#4CAF50' }
-    };
-    return configs[this.type] || configs.power;
-  }
-  
-  styles() {
-    return `
+    static get observedAttributes() {
+        return ['type', 'value', 'connected'];
+    }
+
+    get type() {
+        return this.getAttribute('type') || 'power';
+    }
+
+    get value() {
+        return this.getAttribute('value') || '--';
+    }
+
+    get connected() {
+        return this.hasAttribute('connected');
+    }
+
+    get config() {
+        const configs = {
+            power: { label: 'Power', unit: 'W', emoji: '⚡', color: '#FFD700' },
+            heartrate: { label: 'Heart Rate', unit: 'bpm', emoji: '❤️', color: '#FF4444' },
+            cadence: { label: 'Cadence', unit: 'rpm', emoji: '🚴', color: '#4CAF50' },
+        };
+        return configs[this.type] || configs.power;
+    }
+
+    styles() {
+        return `
       :host {
         display: flex;
         flex-direction: column;
@@ -202,16 +207,16 @@ export class MetricDisplay extends BaseComponent {
         margin-top: 0.25rem;
       }
     `;
-  }
-  
-  template() {
-    const { label, unit, color } = this.config;
-    return `
+    }
+
+    template() {
+        const { label, unit, color } = this.config;
+        return `
       <div class="label">${label}</div>
       <div class="value" style="--metric-color: ${color}">${this.value}</div>
       <div class="unit">${this.value !== '--' ? unit : ''}</div>
     `;
-  }
+    }
 }
 
 customElements.define('metric-display', MetricDisplay);
@@ -225,33 +230,33 @@ customElements.define('metric-display', MetricDisplay);
 import { BaseComponent } from '../base/BaseComponent.js';
 
 export class ConnectButton extends BaseComponent {
-  static get observedAttributes() {
-    return ['type', 'connected', 'connecting'];
-  }
-  
-  get type() {
-    return this.getAttribute('type') || 'power';
-  }
-  
-  get connected() {
-    return this.hasAttribute('connected');
-  }
-  
-  get connecting() {
-    return this.hasAttribute('connecting');
-  }
-  
-  get config() {
-    const configs = {
-      power: { emoji: '⚡', label: 'Power' },
-      heartrate: { emoji: '❤️', label: 'Heartrate' },
-      cadence: { emoji: '🚴', label: 'Cadence' }
-    };
-    return configs[this.type] || configs.power;
-  }
-  
-  styles() {
-    return `
+    static get observedAttributes() {
+        return ['type', 'connected', 'connecting'];
+    }
+
+    get type() {
+        return this.getAttribute('type') || 'power';
+    }
+
+    get connected() {
+        return this.hasAttribute('connected');
+    }
+
+    get connecting() {
+        return this.hasAttribute('connecting');
+    }
+
+    get config() {
+        const configs = {
+            power: { emoji: '⚡', label: 'Power' },
+            heartrate: { emoji: '❤️', label: 'Heartrate' },
+            cadence: { emoji: '🚴', label: 'Cadence' },
+        };
+        return configs[this.type] || configs.power;
+    }
+
+    styles() {
+        return `
       :host {
         display: block;
       }
@@ -288,27 +293,27 @@ export class ConnectButton extends BaseComponent {
         50% { opacity: 0.5; }
       }
     `;
-  }
-  
-  template() {
-    const { emoji, label } = this.config;
-    const action = this.connected ? 'Disconnect' : 'Connect';
-    const className = this.connecting ? 'connecting' : '';
-    
-    return `
+    }
+
+    template() {
+        const { emoji, label } = this.config;
+        const action = this.connected ? 'Disconnect' : 'Connect';
+        const className = this.connecting ? 'connecting' : '';
+
+        return `
       <button class="${className}" ${this.connecting ? 'disabled' : ''}>
         ${emoji} ${action} ${label}
       </button>
     `;
-  }
-  
-  setupEventListeners() {
-    this.$('button').addEventListener('click', () => {
-      if (this.connecting) return;
-      
-      this.emit('connection-toggle', { type: this.type });
-    });
-  }
+    }
+
+    setupEventListeners() {
+        this.$('button').addEventListener('click', () => {
+            if (this.connecting) return;
+
+            this.emit('connection-toggle', { type: this.type });
+        });
+    }
 }
 
 customElements.define('connect-button', ConnectButton);
@@ -322,20 +327,20 @@ customElements.define('connect-button', ConnectButton);
 import { BaseComponent } from '../base/BaseComponent.js';
 
 export class AppHeader extends BaseComponent {
-  static get observedAttributes() {
-    return ['time', 'running'];
-  }
-  
-  get time() {
-    return this.getAttribute('time') || '00:00:00';
-  }
-  
-  get running() {
-    return this.hasAttribute('running');
-  }
-  
-  styles() {
-    return `
+    static get observedAttributes() {
+        return ['time', 'running'];
+    }
+
+    get time() {
+        return this.getAttribute('time') || '00:00:00';
+    }
+
+    get running() {
+        return this.hasAttribute('running');
+    }
+
+    styles() {
+        return `
       :host {
         display: block;
         background: white;
@@ -384,12 +389,12 @@ export class AppHeader extends BaseComponent {
         /* Style slotted menu */
       }
     `;
-  }
-  
-  template() {
-    const buttonEmoji = this.running ? '⏹️' : '▶️';
-    
-    return `
+    }
+
+    template() {
+        const buttonEmoji = this.running ? '⏹️' : '▶️';
+
+        return `
       <div class="header-content">
         <slot name="menu"></slot>
         <div class="time">${this.time}</div>
@@ -398,17 +403,17 @@ export class AppHeader extends BaseComponent {
         </div>
       </div>
     `;
-  }
-  
-  setupEventListeners() {
-    this.$('#startStop').addEventListener('click', () => {
-      this.emit('start-stop-click');
-    });
-    
-    this.$('.time').addEventListener('click', () => {
-      this.emit('start-stop-click');
-    });
-  }
+    }
+
+    setupEventListeners() {
+        this.$('#startStop').addEventListener('click', () => {
+            this.emit('start-stop-click');
+        });
+
+        this.$('.time').addEventListener('click', () => {
+            this.emit('start-stop-click');
+        });
+    }
 }
 
 customElements.define('app-header', AppHeader);
@@ -421,35 +426,35 @@ customElements.define('app-header', AppHeader);
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <script type="module" src="/src/components/index.js"></script>
-</head>
-<body>
-  <app-header time="00:15:32" running>
-    <app-menu slot="menu"></app-menu>
-  </app-header>
-  
-  <main>
-    <metrics-panel paused>
-      <metric-display type="power" value="247"></metric-display>
-      <metric-display type="heartrate" value="156"></metric-display>
-      <metric-display type="cadence" value="92"></metric-display>
-    </metrics-panel>
-  </main>
-  
-  <script type="module">
-    // Listen for events from components
-    document.querySelector('app-header').addEventListener('start-stop-click', () => {
-      // Handle start/stop
-    });
-    
-    document.querySelectorAll('connect-button').forEach(btn => {
-      btn.addEventListener('connection-toggle', (e) => {
-        console.log('Toggle connection for:', e.detail.type);
-      });
-    });
-  </script>
-</body>
+    <head>
+        <script type="module" src="/src/components/index.js"></script>
+    </head>
+    <body>
+        <app-header time="00:15:32" running>
+            <app-menu slot="menu"></app-menu>
+        </app-header>
+
+        <main>
+            <metrics-panel paused>
+                <metric-display type="power" value="247"></metric-display>
+                <metric-display type="heartrate" value="156"></metric-display>
+                <metric-display type="cadence" value="92"></metric-display>
+            </metrics-panel>
+        </main>
+
+        <script type="module">
+            // Listen for events from components
+            document.querySelector('app-header').addEventListener('start-stop-click', () => {
+                // Handle start/stop
+            });
+
+            document.querySelectorAll('connect-button').forEach((btn) => {
+                btn.addEventListener('connection-toggle', (e) => {
+                    console.log('Toggle connection for:', e.detail.type);
+                });
+            });
+        </script>
+    </body>
 </html>
 ```
 
@@ -461,45 +466,45 @@ customElements.define('app-header', AppHeader);
 /* src/styles/tokens.css */
 
 :root {
-  /* Colors */
-  --color-power: #FFD700;
-  --color-heartrate: #FF4444;
-  --color-cadence: #4CAF50;
-  --color-primary: #2196F3;
-  --color-background: #ffffff;
-  --color-surface: #f6f8fa;
-  --color-text-primary: #1f2328;
-  --color-text-secondary: #656d76;
-  --color-border: #e1e4e8;
-  
-  /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  
-  /* Typography */
-  --font-family: system-ui, -apple-system, sans-serif;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.5rem;
-  
-  /* Borders */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-  
-  /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.3s ease;
+    /* Colors */
+    --color-power: #ffd700;
+    --color-heartrate: #ff4444;
+    --color-cadence: #4caf50;
+    --color-primary: #2196f3;
+    --color-background: #ffffff;
+    --color-surface: #f6f8fa;
+    --color-text-primary: #1f2328;
+    --color-text-secondary: #656d76;
+    --color-border: #e1e4e8;
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* Typography */
+    --font-family: system-ui, -apple-system, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+
+    /* Borders */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
 }
 ```
 
@@ -508,16 +513,19 @@ customElements.define('app-header', AppHeader);
 ## Migration Strategy
 
 ### Phase 1: Create New Components (No Changes to Existing)
+
 1. Build components in isolation
 2. Create component showcase/demo page
 3. Write component tests
 
 ### Phase 2: Replace One at a Time
+
 1. Start with simple components (MetricDisplay)
 2. Replace in `index.html`, keep existing JS working
 3. Gradually migrate event handling
 
 ### Phase 3: Clean Up
+
 1. Remove old DOM manipulation code
 2. Remove unused CSS
 3. Update tests
@@ -533,39 +541,39 @@ import { expect, test } from 'vitest';
 import './MetricDisplay.js';
 
 test('MetricDisplay renders with default values', async () => {
-  document.body.innerHTML = '<metric-display type="power"></metric-display>';
-  const el = document.querySelector('metric-display');
-  
-  await el.updateComplete; // Wait for render
-  
-  const value = el.shadowRoot.querySelector('.value');
-  expect(value.textContent).toBe('--');
+    document.body.innerHTML = '<metric-display type="power"></metric-display>';
+    const el = document.querySelector('metric-display');
+
+    await el.updateComplete; // Wait for render
+
+    const value = el.shadowRoot.querySelector('.value');
+    expect(value.textContent).toBe('--');
 });
 
 test('MetricDisplay updates when value attribute changes', async () => {
-  document.body.innerHTML = '<metric-display type="power" value="250"></metric-display>';
-  const el = document.querySelector('metric-display');
-  
-  await el.updateComplete;
-  
-  const value = el.shadowRoot.querySelector('.value');
-  expect(value.textContent).toBe('250');
+    document.body.innerHTML = '<metric-display type="power" value="250"></metric-display>';
+    const el = document.querySelector('metric-display');
+
+    await el.updateComplete;
+
+    const value = el.shadowRoot.querySelector('.value');
+    expect(value.textContent).toBe('250');
 });
 
 test('MetricDisplay emits connection-toggle event', async () => {
-  document.body.innerHTML = '<connect-button type="power"></connect-button>';
-  const el = document.querySelector('connect-button');
-  
-  await el.updateComplete;
-  
-  let eventFired = false;
-  el.addEventListener('connection-toggle', (e) => {
-    eventFired = true;
-    expect(e.detail.type).toBe('power');
-  });
-  
-  el.shadowRoot.querySelector('button').click();
-  expect(eventFired).toBe(true);
+    document.body.innerHTML = '<connect-button type="power"></connect-button>';
+    const el = document.querySelector('connect-button');
+
+    await el.updateComplete;
+
+    let eventFired = false;
+    el.addEventListener('connection-toggle', (e) => {
+        eventFired = true;
+        expect(e.detail.type).toBe('power');
+    });
+
+    el.shadowRoot.querySelector('button').click();
+    expect(eventFired).toBe(true);
 });
 ```
 

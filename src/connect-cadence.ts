@@ -1,8 +1,12 @@
-export const connectCadenceMock = async () => {
-    const listeners = [];
+import { getEnvMode } from './getEnvMode.js';
+import type { Measurement, SensorConnection } from './types/index.js';
+import { showNotification } from './ui/notifications.js';
+
+export const connectCadenceMock = async (): Promise<SensorConnection> => {
+    const listeners: ((entry: Measurement) => void)[] = [];
     const cadenceInterval = setInterval(() => {
         const randomCadence = Math.floor(Math.random() * 40) + 70; // 70-110 rpm
-        const entry = { timestamp: Date.now(), value: randomCadence };
+        const entry: Measurement = { timestamp: Date.now(), value: randomCadence };
         listeners.forEach((listener) => listener(entry));
     }, 1000);
 
@@ -14,14 +18,12 @@ export const connectCadenceMock = async () => {
     };
 };
 
-import { showNotification } from './ui/notifications.js';
-
-export const connectCadenceBluetooth = async () => {
-    const listeners = [];
-    let lastCrankRevs = null;
-    let lastCrankTime = null;
-    let device;
-    let characteristic;
+export const connectCadenceBluetooth = async (): Promise<SensorConnection> => {
+    const listeners: ((entry: Measurement) => void)[] = [];
+    let lastCrankRevs: number | null = null;
+    let lastCrankTime: number | null = null;
+    let device: BluetoothDevice;
+    let characteristic: BluetoothRemoteGATTCharacteristic;
 
     try {
         // Request Bluetooth device with cycling speed and cadence service
@@ -30,7 +32,7 @@ export const connectCadenceBluetooth = async () => {
             optionalServices: ['cycling_speed_and_cadence'],
         });
     } catch (error) {
-        if (error.name === 'NotFoundError') {
+        if (error instanceof Error && error.name === 'NotFoundError') {
             showNotification('No cadence sensor found or selection cancelled', 'error');
         } else {
             showNotification('Failed to search for cadence sensor', 'error');
@@ -40,7 +42,7 @@ export const connectCadenceBluetooth = async () => {
 
     try {
         // Connect to GATT server
-        const server = await device.gatt.connect();
+        const server = await device.gatt!.connect();
 
         // Get cycling speed and cadence service
         const service = await server.getPrimaryService('cycling_speed_and_cadence');
@@ -57,7 +59,8 @@ export const connectCadenceBluetooth = async () => {
 
     // Listen for cadence changes
     characteristic.addEventListener('characteristicvaluechanged', (event) => {
-        const value = event.target.value;
+        const target = event.target as BluetoothRemoteGATTCharacteristic;
+        const value = target.value!;
         const flags = value.getUint8(0);
 
         // Check if crank revolution data is present (bit 1 of flags)
@@ -93,7 +96,7 @@ export const connectCadenceBluetooth = async () => {
 
                     // Sanity check for reasonable cadence values
                     if (rpm >= 0 && rpm < 300) {
-                        const entry = { timestamp: Date.now(), value: rpm };
+                        const entry: Measurement = { timestamp: Date.now(), value: rpm };
                         listeners.forEach((listener) => listener(entry));
                     }
                 }
@@ -108,7 +111,7 @@ export const connectCadenceBluetooth = async () => {
         disconnect: () => {
             try {
                 characteristic.stopNotifications();
-                device.gatt.disconnect();
+                device.gatt!.disconnect();
             } catch {
                 // Ignore disconnect errors - device may already be disconnected
             }
@@ -119,8 +122,9 @@ export const connectCadenceBluetooth = async () => {
     };
 };
 
-export const connectCadence = async () => {
-    if (import.meta.env.MODE === 'development' || import.meta.env.MODE === 'test') {
+export const connectCadence = async (): Promise<SensorConnection> => {
+    const mode = getEnvMode();
+    if (mode === 'development' || mode === 'test') {
         return connectCadenceMock();
     }
     return connectCadenceBluetooth();

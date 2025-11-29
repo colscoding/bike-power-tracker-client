@@ -2,18 +2,28 @@ import { connectCadence } from './connect-cadence.js';
 import { connectHeartRate } from './connect-heartrate.js';
 import { connectPower } from './connect-power.js';
 import { elements } from './elements.js';
+import type { ConnectionsState, MetricType, SensorConnection } from './types/index.js';
+import type { MeasurementsState } from './MeasurementsState.js';
 
-export const initConnectionButtons = ({ connectionsState, measurementsState }) => {
-    const metricTypes = ['power', 'heartrate', 'cadence'];
-    const emojis = {
+interface ConnectionButtonsParams {
+    connectionsState: ConnectionsState;
+    measurementsState: MeasurementsState;
+}
+
+export const initConnectionButtons = ({
+    connectionsState,
+    measurementsState,
+}: ConnectionButtonsParams): void => {
+    const metricTypes: MetricType[] = ['power', 'heartrate', 'cadence'];
+    const emojis: Record<MetricType, string> = {
         power: '⚡',
         heartrate: '❤️',
         cadence: '🚴',
     };
 
-    const disconnectFn = (key) => {
+    const disconnectFn = (key: MetricType): void => {
         if (typeof connectionsState[key].disconnect === 'function') {
-            connectionsState[key].disconnect();
+            connectionsState[key].disconnect!();
             connectionsState[key].disconnect = null;
             connectionsState[key].isConnected = false;
             const connectElem = elements[key]?.connect;
@@ -27,8 +37,8 @@ export const initConnectionButtons = ({ connectionsState, measurementsState }) =
         }
     };
 
-    const connectFn = async (key) => {
-        const connectFns = {
+    const connectFn = async (key: MetricType): Promise<void> => {
+        const connectFns: Record<MetricType, () => Promise<SensorConnection>> = {
             power: connectPower,
             heartrate: connectHeartRate,
             cadence: connectCadence,

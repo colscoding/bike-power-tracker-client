@@ -1,11 +1,10 @@
 import { mergeMeasurements } from './merge-measurements.js';
+import type { MeasurementsState } from './MeasurementsState.js';
 
 /**
  * Creates a CSV string from merged measurements
- * @param {MeasurementsState} measurements - Merged measurement data points
- * @returns {string} CSV formatted string
  */
-export const getCsvString = (measurements) => {
+export const getCsvString = (measurements: MeasurementsState): string => {
     const dataPoints = mergeMeasurements(measurements);
     if (!dataPoints || dataPoints.length === 0) {
         return '';

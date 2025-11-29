@@ -1,9 +1,9 @@
+import type { NotificationType } from '../types/index.js';
+
 /**
  * Show a notification to the user
- * @param {string} message - The message to display
- * @param {'info' | 'success' | 'error'} type - The type of notification
  */
-export function showNotification(message, type = 'info') {
+export function showNotification(message: string, type: NotificationType = 'info'): void {
     const notification = document.createElement('div');
     const bgColor = type === 'error' ? '#cf222e' : type === 'success' ? '#1f883d' : '#2196f3';
     notification.style.cssText = `

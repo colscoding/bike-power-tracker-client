@@ -1,12 +1,14 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import prettierConfig from 'eslint-config-prettier';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
     {
         ignores: ['dist/', 'test-e2e/playwright-report/', 'test-e2e/test-results/'],
     },
     js.configs.recommended,
+    ...tseslint.configs.recommended,
     {
         languageOptions: {
             ecmaVersion: 2022,
@@ -17,9 +19,12 @@ export default [
             },
         },
         rules: {
-            'no-unused-vars': 'warn',
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': 'warn',
             'no-console': 'off',
+            '@typescript-eslint/explicit-function-return-type': 'off',
+            '@typescript-eslint/no-explicit-any': 'warn',
         },
     },
-    prettierConfig,
-];
+    prettierConfig
+);

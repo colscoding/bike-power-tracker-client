@@ -142,6 +142,7 @@ test('MeasurementsState.add should throw error for unknown measurement type', ()
     const timestamp = Date.now();
 
     assert.throws(
+        // @ts-expect-error - Testing invalid type
         () => bike.add('unknown', { timestamp, value: 100 }),
         { message: 'Unknown measurement type: unknown' }
     );

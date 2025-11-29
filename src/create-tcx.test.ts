@@ -165,7 +165,7 @@ test('getTcxString creates multiple trackpoints for multiple timestamps', () => 
 
     // Should have 3 trackpoints
     const trackpointMatches = tcx.match(/<Trackpoint>/g);
-    assert.strictEqual(trackpointMatches.length, 3);
+    assert.strictEqual(trackpointMatches!.length, 3);
 });
 
 test('getTcxString includes required Lap elements', () => {

@@ -1,8 +1,12 @@
-export const connectPowerMock = async () => {
-    const listeners = [];
+import { getEnvMode } from './getEnvMode.js';
+import type { Measurement, SensorConnection } from './types/index.js';
+import { showNotification } from './ui/notifications.js';
+
+export const connectPowerMock = async (): Promise<SensorConnection> => {
+    const listeners: ((entry: Measurement) => void)[] = [];
     const powerInterval = setInterval(() => {
         const randomPower = Math.floor(Math.random() * 300) + 100; // 100-400W
-        const entry = { timestamp: Date.now(), value: randomPower };
+        const entry: Measurement = { timestamp: Date.now(), value: randomPower };
         listeners.forEach((listener) => listener(entry));
     }, 100);
 
@@ -14,12 +18,10 @@ export const connectPowerMock = async () => {
     };
 };
 
-import { showNotification } from './ui/notifications.js';
-
-export const connectPowerBluetooth = async () => {
-    const listeners = [];
-    let device;
-    let characteristic;
+export const connectPowerBluetooth = async (): Promise<SensorConnection> => {
+    const listeners: ((entry: Measurement) => void)[] = [];
+    let device: BluetoothDevice;
+    let characteristic: BluetoothRemoteGATTCharacteristic;
 
     try {
         // Request Bluetooth device with cycling power service
@@ -28,7 +30,7 @@ export const connectPowerBluetooth = async () => {
             optionalServices: ['cycling_power'],
         });
     } catch (error) {
-        if (error.name === 'NotFoundError') {
+        if (error instanceof Error && error.name === 'NotFoundError') {
             showNotification('No power meter found or selection cancelled', 'error');
         } else {
             showNotification('Failed to search for power meter', 'error');
@@ -38,7 +40,7 @@ export const connectPowerBluetooth = async () => {
 
     try {
         // Connect to GATT server
-        const server = await device.gatt.connect();
+        const server = await device.gatt!.connect();
 
         // Get cycling power service
         const service = await server.getPrimaryService('cycling_power');
@@ -55,10 +57,11 @@ export const connectPowerBluetooth = async () => {
 
     // Listen for power changes
     characteristic.addEventListener('characteristicvaluechanged', (event) => {
-        const value = event.target.value;
+        const target = event.target as BluetoothRemoteGATTCharacteristic;
+        const value = target.value!;
         // Cycling power measurement format: bytes 2-3 contain instantaneous power (little-endian)
         const power = value.getInt16(2, true);
-        const entry = { timestamp: Date.now(), value: power };
+        const entry: Measurement = { timestamp: Date.now(), value: power };
         listeners.forEach((listener) => listener(entry));
     });
 
@@ -66,7 +69,7 @@ export const connectPowerBluetooth = async () => {
         disconnect: () => {
             try {
                 characteristic.stopNotifications();
-                device.gatt.disconnect();
+                device.gatt!.disconnect();
             } catch {
                 // Ignore disconnect errors - device may already be disconnected
             }
@@ -77,8 +80,9 @@ export const connectPowerBluetooth = async () => {
     };
 };
 
-export const connectPower = async () => {
-    if (import.meta.env.MODE === 'development' || import.meta.env.MODE === 'test') {
+export const connectPower = async (): Promise<SensorConnection> => {
+    const mode = getEnvMode();
+    if (mode === 'development' || mode === 'test') {
         return connectPowerMock();
     }
     return connectPowerBluetooth();

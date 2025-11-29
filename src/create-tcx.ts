@@ -1,10 +1,14 @@
 import { mergeMeasurements } from './merge-measurements.js';
+import type { MeasurementsState } from './MeasurementsState.js';
+import type { MergedDataPoint } from './types/index.js';
 
-const hrString = (hr) =>
+const hrString = (hr: number | null): string =>
     hr !== null ? `<HeartRateBpm><Value>${Math.round(hr)}</Value></HeartRateBpm>` : '';
-const cadenceString = (cadence) =>
+
+const cadenceString = (cadence: number | null): string =>
     cadence !== null ? `<Cadence>${Math.round(cadence)}</Cadence>` : '';
-const powerString = (power) => {
+
+const powerString = (power: number | null): string => {
     if (power === null) return '';
     return `<Extensions>
               <TPX xmlns="http://www.garmin.com/xmlschemas/ActivityExtension/v2">
@@ -13,11 +17,11 @@ const powerString = (power) => {
             </Extensions>`;
 };
 
-const getTcxTrackpoint = (point) => {
+const getTcxTrackpoint = (point: MergedDataPoint): string => {
     const timestamp = new Date(point.timestamp).toISOString();
 
     // Order matters in TCX schema: Time, Position, Altitude, Distance, HeartRate, Cadence, Extensions
-    const parts = [];
+    const parts: string[] = [];
 
     if (point.heartrate !== null) {
         parts.push(hrString(point.heartrate));
@@ -42,10 +46,8 @@ const getTcxTrackpoint = (point) => {
 
 /**
  * Creates a Garmin TCX (Training Center XML) string from merged measurements
- * @param {MeasurementsState} measurements - Merged measurement data points
- * @returns {string} TCX formatted XML string
  */
-export const getTcxString = (measurements) => {
+export const getTcxString = (measurements: MeasurementsState): string => {
     const dataPoints = mergeMeasurements(measurements);
     if (!dataPoints || dataPoints.length === 0) {
         return '';

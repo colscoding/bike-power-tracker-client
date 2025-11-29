@@ -1,5 +1,11 @@
-export const getValuesAtTimestamps = (arr, timestamps) => {
-    const entries = [];
+import type { Measurement, MergedDataPoint } from './types/index.js';
+import type { MeasurementsState } from './MeasurementsState.js';
+
+export const getValuesAtTimestamps = (
+    arr: Measurement[],
+    timestamps: number[]
+): (number | null)[] => {
+    const entries: (number | null)[] = [];
     let index = 0;
     for (const ts of timestamps) {
         while (index < arr.length && arr[index].timestamp < ts) {
@@ -7,7 +13,7 @@ export const getValuesAtTimestamps = (arr, timestamps) => {
         }
 
         const prevIndex = index - 1;
-        let suggestedElem = undefined;
+        let suggestedElem: Measurement | undefined = undefined;
         const isAfterLastPoint = index >= arr.length;
         if (prevIndex < 0) {
             suggestedElem = arr?.[index];
@@ -32,11 +38,8 @@ export const getValuesAtTimestamps = (arr, timestamps) => {
     }
     return entries;
 };
-/**
- * @param {MeasurementsState} measurements - The measurements state object containing workout data
- */
 
-export const mergeMeasurements = (measurements) => {
+export const mergeMeasurements = (measurements: MeasurementsState): MergedDataPoint[] => {
     const sources = [measurements.heartrate, measurements.cadence, measurements.power];
     const hasData = sources.some((data) => data.length > 0);
     if (!hasData) {
@@ -48,7 +51,7 @@ export const mergeMeasurements = (measurements) => {
         ...sources.map((data) => (data.length > 0 ? data[data.length - 1].timestamp : -Infinity))
     );
     const timeStep = 1000; // 1 second intervals
-    const timestamps = [];
+    const timestamps: number[] = [];
     let time = startTime;
     while (time <= endTime) {
         timestamps.push(time);
@@ -58,9 +61,9 @@ export const mergeMeasurements = (measurements) => {
     const syncedCadence = getValuesAtTimestamps(measurements.cadence, timestamps);
     const syncedPower = getValuesAtTimestamps(measurements.power, timestamps);
 
-    const dataPoints = [];
+    const dataPoints: MergedDataPoint[] = [];
     for (let i = 0; i < timestamps.length; i++) {
-        const point = {
+        const point: MergedDataPoint = {
             timestamp: timestamps[i],
             heartrate: syncedHR[i] ?? null,
             cadence: syncedCadence[i] ?? null,

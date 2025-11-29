@@ -1,16 +1,20 @@
-export function initSettings() {
-    const settingsButton = document.getElementById('settingsButton');
-    const settingsModal = document.getElementById('settingsModal');
-    const closeSettingsModal = document.getElementById('closeSettingsModal');
-    const saveSettingsButton = document.getElementById('saveSettings');
+import type { AppSettings } from '../types/index.js';
 
-    const settingPower = document.getElementById('settingPower');
-    const settingCadence = document.getElementById('settingCadence');
-    const settingHeartrate = document.getElementById('settingHeartrate');
+export function initSettings(): void {
+    const settingsButton = document.getElementById('settingsButton')!;
+    const settingsModal = document.getElementById('settingsModal')!;
+    const closeSettingsModal = document.getElementById('closeSettingsModal')!;
+    const saveSettingsButton = document.getElementById('saveSettings')!;
+
+    const settingPower = document.getElementById('settingPower') as HTMLInputElement;
+    const settingCadence = document.getElementById('settingCadence') as HTMLInputElement;
+    const settingHeartrate = document.getElementById('settingHeartrate') as HTMLInputElement;
 
     // Load settings from localStorage
-    const loadSettings = () => {
-        const settings = JSON.parse(localStorage.getItem('bpt-settings')) || {
+    const loadSettings = (): void => {
+        const settings: AppSettings = JSON.parse(
+            localStorage.getItem('bpt-settings') || 'null'
+        ) || {
             power: true,
             cadence: true,
             heartrate: true,
@@ -24,8 +28,8 @@ export function initSettings() {
     };
 
     // Save settings to localStorage
-    const saveSettings = () => {
-        const settings = {
+    const saveSettings = (): void => {
+        const settings: AppSettings = {
             power: settingPower.checked,
             cadence: settingCadence.checked,
             heartrate: settingHeartrate.checked,
@@ -37,9 +41,9 @@ export function initSettings() {
     };
 
     // Apply settings to the UI
-    const applySettings = (settings) => {
-        const toggleMetric = (metric, isVisible) => {
-            const elements = document.querySelectorAll(`.metric-group-${metric}`);
+    const applySettings = (settings: AppSettings): void => {
+        const toggleMetric = (metric: keyof AppSettings, isVisible: boolean): void => {
+            const elements = document.querySelectorAll<HTMLElement>(`.metric-group-${metric}`);
             elements.forEach((el) => {
                 el.style.display = isVisible ? 'flex' : 'none';
             });
@@ -50,7 +54,7 @@ export function initSettings() {
         toggleMetric('heartrate', settings.heartrate);
     };
 
-    const openModal = () => {
+    const openModal = (): void => {
         settingsModal.style.display = 'flex';
         // Close the main menu details element
         const details = document.querySelector('header details');
@@ -59,7 +63,7 @@ export function initSettings() {
         }
     };
 
-    const closeModal = () => {
+    const closeModal = (): void => {
         settingsModal.style.display = 'none';
     };
 

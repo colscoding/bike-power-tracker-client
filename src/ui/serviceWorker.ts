@@ -1,13 +1,14 @@
+// @ts-expect-error - vite-plugin-pwa virtual module
 import { registerSW } from 'virtual:pwa-register';
 
-export const registerServiceWorker = () => {
+export const registerServiceWorker = (): void => {
     // Don't register service worker in development to avoid caching issues
     if (import.meta.env.DEV) {
         console.log('Service Worker disabled in development mode');
         // Unregister existing service workers if any to ensure fresh content
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then((registrations) => {
-                for (let registration of registrations) {
+                for (const registration of registrations) {
                     registration.unregister();
                     console.log('Unregistered existing service worker');
                 }
@@ -28,7 +29,7 @@ export const registerServiceWorker = () => {
         onOfflineReady() {
             console.log('App ready to work offline');
         },
-        onRegisteredSW(swUrl, registration) {
+        onRegisteredSW(swUrl: string, registration: ServiceWorkerRegistration | undefined) {
             console.log('Service Worker registered successfully:', swUrl);
 
             // Check for updates periodically (every hour)
@@ -41,18 +42,18 @@ export const registerServiceWorker = () => {
                 );
             }
         },
-        onRegisterError(error) {
+        onRegisterError(error: Error) {
             console.log('Service Worker registration failed:', error);
         },
     });
 };
 
-const showUpdateNotification = (updateSW) => {
+const showUpdateNotification = (updateSW: (reloadPage?: boolean) => Promise<void>): void => {
     const updateContainer = document.getElementById('updateNotification');
     if (updateContainer) {
         updateContainer.style.display = 'block';
 
-        const updateButton = document.getElementById('updateButton');
+        const updateButton = document.getElementById('updateButton')!;
         updateButton.addEventListener(
             'click',
             () => {
@@ -61,7 +62,7 @@ const showUpdateNotification = (updateSW) => {
             { once: true }
         );
 
-        const dismissUpdateButton = document.getElementById('dismissUpdate');
+        const dismissUpdateButton = document.getElementById('dismissUpdate')!;
         dismissUpdateButton.addEventListener(
             'click',
             () => {

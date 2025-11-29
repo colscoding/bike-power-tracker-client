@@ -1,6 +1,11 @@
-let deferredPrompt = null;
+interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
-export const initInstallPrompt = () => {
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+export const initInstallPrompt = (): void => {
     if (import.meta.env.MODE === 'test') {
         return;
     }
@@ -11,7 +16,7 @@ export const initInstallPrompt = () => {
         e.preventDefault();
 
         // Stash the event so it can be triggered later
-        deferredPrompt = e;
+        deferredPrompt = e as BeforeInstallPromptEvent;
 
         // Show the install button
         showInstallButton();
@@ -25,15 +30,15 @@ export const initInstallPrompt = () => {
     });
 };
 
-const showInstallButton = () => {
+const showInstallButton = (): void => {
     const installContainer = document.getElementById('installPrompt');
     if (installContainer) {
         installContainer.style.display = 'block';
 
-        const installButton = document.getElementById('installButton');
-        const dismissButton = document.getElementById('dismissInstall');
+        const installButton = document.getElementById('installButton')!;
+        const dismissButton = document.getElementById('dismissInstall')!;
 
-        const handleInstall = async () => {
+        const handleInstall = async (): Promise<void> => {
             if (!deferredPrompt) {
                 return;
             }
@@ -50,7 +55,7 @@ const showInstallButton = () => {
             hideInstallButton();
         };
 
-        const handleDismiss = () => {
+        const handleDismiss = (): void => {
             hideInstallButton();
         };
 
@@ -60,7 +65,7 @@ const showInstallButton = () => {
     }
 };
 
-const hideInstallButton = () => {
+const hideInstallButton = (): void => {
     const installContainer = document.getElementById('installPrompt');
     if (installContainer) {
         installContainer.style.display = 'none';

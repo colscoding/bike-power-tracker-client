@@ -1,9 +1,16 @@
 import { getCsvString } from '../create-csv.js';
 import { getTcxString } from '../create-tcx.js';
+import type { TimeState } from '../types/index.js';
+import type { MeasurementsState } from '../MeasurementsState.js';
 
-export const initDiscardButton = ({ measurementsState, timeState }) => {
+interface DiscardButtonParams {
+    measurementsState: MeasurementsState;
+    timeState: TimeState;
+}
+
+export const initDiscardButton = ({ measurementsState, timeState }: DiscardButtonParams): void => {
     // Discard button - in menu with confirmation dialog
-    const discardButton = document.getElementById('discardButton');
+    const discardButton = document.getElementById('discardButton')!;
     discardButton.addEventListener('click', () => {
         // Show confirmation dialog
         if (confirm('Are you sure you want to discard this workout?')) {
@@ -20,8 +27,8 @@ export const initDiscardButton = ({ measurementsState, timeState }) => {
     });
 };
 
-export const initExportButton = (measurementsState) => {
-    const exportDataElem = document.getElementById('exportData');
+export const initExportButton = (measurementsState: MeasurementsState): void => {
+    const exportDataElem = document.getElementById('exportData')!;
     exportDataElem.addEventListener('click', () => {
         try {
             const now = new Date();
