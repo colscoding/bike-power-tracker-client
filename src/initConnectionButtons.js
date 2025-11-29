@@ -1,7 +1,7 @@
-import { connectCadence } from './connect-cadence';
-import { connectHeartRate } from './connect-heartrate';
-import { connectPower } from './connect-power';
-import { elements } from './elements';
+import { connectCadence } from './connect-cadence.js';
+import { connectHeartRate } from './connect-heartrate.js';
+import { connectPower } from './connect-power.js';
+import { elements } from './elements.js';
 
 export const initConnectionButtons = ({ connectionsState, measurementsState }) => {
     const metricTypes = ['power', 'heartrate', 'cadence'];

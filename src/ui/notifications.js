@@ -5,12 +5,13 @@
  */
 export function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
+    const bgColor = type === 'error' ? '#cf222e' : type === 'success' ? '#1f883d' : '#2196f3';
     notification.style.cssText = `
         position: fixed;
         top: 80px;
         left: 50%;
         transform: translateX(-50%);
-        background: ${type === 'error' ? '#cf222e' : '#1f883d'};
+        background: ${bgColor};
         color: white;
         padding: 12px 24px;
         border-radius: 8px;

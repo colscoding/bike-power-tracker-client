@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'fs';
 
 test('export button should download all measurements as JSON', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('/');
 
     // Add some test data
     await page.evaluate(() => {
@@ -13,19 +13,14 @@ test('export button should download all measurements as JSON', async ({ page }) 
         window.bike.addCadence({ timestamp: Date.now(), value: 80 });
     });
 
-    // Wait a moment for data to be added
-    await page.waitForTimeout(100);
-
     // Open the menu
-    const menu = await page.locator('summary');
-    await menu.click();
+    await page.locator('summary').click();
 
     // Set up download listener
     const downloadPromise = page.waitForEvent('download');
 
     // Click export button
-    const exportButton = await page.locator('#exportData');
-    await exportButton.click();
+    await page.locator('#exportData').click();
 
     // Wait for download
     const download = await downloadPromise;
@@ -55,11 +50,9 @@ test('export button should download all measurements as JSON', async ({ page }) 
 });
 
 test('export button should download measurements', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('/');
 
-    const startStopButton = await page.locator('#startStop');
-    const menu = await page.locator('summary');
-    const exportButton = await page.locator('#exportData');
+    const startStopButton = page.locator('#startStop');
 
     // Add test data and start
     await page.evaluate(() => {
@@ -68,20 +61,21 @@ test('export button should download measurements', async ({ page }) => {
     });
 
     await startStopButton.click();
-    await page.waitForTimeout(500);
+
+    // Wait for timer to start
+    await expect(page.locator('#time')).not.toHaveText('00:00:00', { timeout: 2000 });
 
     // Stop
     await startStopButton.click();
-    await page.waitForTimeout(200);
 
     // Open menu
-    await menu.click();
+    await page.locator('summary').click();
 
     // Set up download listener
     const downloadPromise = page.waitForEvent('download');
 
     // Click export
-    await exportButton.click();
+    await page.locator('#exportData').click();
 
     // Wait for download
     const download = await downloadPromise;

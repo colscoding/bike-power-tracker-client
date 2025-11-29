@@ -108,3 +108,41 @@ test('MeasurementsState should ignore cadence 300 or higher', () => {
 
     assert.strictEqual(bike.cadence.length, 0);
 });
+
+// Tests for the generic add() method
+test('MeasurementsState.add should add heartrate via generic method', () => {
+    const bike = new MeasurementsState();
+    const timestamp = Date.now();
+    bike.add('heartrate', { timestamp, value: 140 });
+
+    assert.strictEqual(bike.heartrate.length, 1);
+    assert.strictEqual(bike.heartrate[0].value, 140);
+});
+
+test('MeasurementsState.add should add power via generic method', () => {
+    const bike = new MeasurementsState();
+    const timestamp = Date.now();
+    bike.add('power', { timestamp, value: 250 });
+
+    assert.strictEqual(bike.power.length, 1);
+    assert.strictEqual(bike.power[0].value, 250);
+});
+
+test('MeasurementsState.add should add cadence via generic method', () => {
+    const bike = new MeasurementsState();
+    const timestamp = Date.now();
+    bike.add('cadence', { timestamp, value: 85 });
+
+    assert.strictEqual(bike.cadence.length, 1);
+    assert.strictEqual(bike.cadence[0].value, 85);
+});
+
+test('MeasurementsState.add should throw error for unknown measurement type', () => {
+    const bike = new MeasurementsState();
+    const timestamp = Date.now();
+
+    assert.throws(
+        () => bike.add('unknown', { timestamp, value: 100 }),
+        { message: 'Unknown measurement type: unknown' }
+    );
+});

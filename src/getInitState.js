@@ -1,4 +1,4 @@
-import { MeasurementsState } from './MeasurementsState';
+import { MeasurementsState } from './MeasurementsState.js';
 
 export const getInitState = () => {
     return {
