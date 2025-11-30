@@ -1,9 +1,10 @@
 // @ts-expect-error - vite-plugin-pwa virtual module
 import { registerSW } from 'virtual:pwa-register';
+import { getEnvDev, getEnvMode } from '../getEnv';
 
 export const registerServiceWorker = (): void => {
     // Don't register service worker in development to avoid caching issues
-    if (import.meta.env.DEV) {
+    if (getEnvDev() === 'true') {
         console.log('Service Worker disabled in development mode');
         // Unregister existing service workers if any to ensure fresh content
         if ('serviceWorker' in navigator) {
@@ -18,7 +19,7 @@ export const registerServiceWorker = (): void => {
     }
 
     // Register service worker for PWA functionality using vite-plugin-pwa
-    if (import.meta.env.MODE === 'test') {
+    if (getEnvMode() === 'test') {
         return;
     }
 

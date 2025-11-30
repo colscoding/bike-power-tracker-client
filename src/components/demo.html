@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Library Demo</title>
+    <link rel="stylesheet" href="./styles/tokens.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: #f6f8fa;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #1f2328;
+        }
+
+        h2 {
+            margin: 30px 0 15px;
+            color: #1f2328;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 8px;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .demo-label {
+            font-size: 14px;
+            color: #656d76;
+            min-width: 120px;
+        }
+
+        .metrics-demo {
+            display: flex;
+            gap: 20px;
+            height: 200px;
+        }
+
+        .metrics-demo metric-display {
+            flex: 1;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+        }
+
+        .header-demo {
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .menu-demo {
+            min-height: 250px;
+        }
+
+        .modal-trigger {
+            padding: 10px 20px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-trigger:hover {
+            background: #1976d2;
+        }
+
+        .event-log {
+            background: #1f2328;
+            color: #7ee787;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .event-log:empty::before {
+            content: "Events will appear here...";
+            color: #656d76;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🚴 Bike Power Tracker - Component Library</h1>
+
+    <h2>📊 Metric Display</h2>
+    <div class="demo-section">
+        <div class="metrics-demo">
+            <metric-display type="power" value="247" connected></metric-display>
+            <metric-display type="heartrate" value="156" connected></metric-display>
+            <metric-display type="cadence" value="92" connected></metric-display>
+        </div>
+        <div class="demo-row" style="margin-top: 20px;">
+            <span class="demo-label">Disconnected:</span>
+            <metric-display type="power" value="--"
+                style="width: 150px; height: 100px; border: 1px solid #e1e4e8; border-radius: 8px;"></metric-display>
+        </div>
+        <div class="demo-row">
+            <span class="demo-label">Paused:</span>
+            <metric-display type="power" value="247" connected paused
+                style="width: 150px; height: 100px; border: 1px solid #e1e4e8; border-radius: 8px;"></metric-display>
+        </div>
+    </div>
+
+    <h2>🔗 Connect Buttons</h2>
+    <div class="demo-section">
+        <div class="demo-row">
+            <span class="demo-label">Disconnected:</span>
+            <connect-button type="power"></connect-button>
+            <connect-button type="heartrate"></connect-button>
+            <connect-button type="cadence"></connect-button>
+        </div>
+        <div class="demo-row">
+            <span class="demo-label">Connected:</span>
+            <connect-button type="power" connected></connect-button>
+        </div>
+        <div class="demo-row">
+            <span class="demo-label">Connecting:</span>
+            <connect-button type="power" connecting></connect-button>
+        </div>
+        <div id="connect-log" class="event-log"></div>
+    </div>
+
+    <h2>⏱️ Timer & Controls</h2>
+    <div class="demo-section">
+        <div class="demo-row">
+            <span class="demo-label">Timer:</span>
+            <timer-display time="00:15:32" running clickable></timer-display>
+        </div>
+        <div class="demo-row">
+            <span class="demo-label">Stopped:</span>
+            <timer-display time="00:00:00" clickable></timer-display>
+        </div>
+        <div class="demo-row">
+            <span class="demo-label">Start/Stop:</span>
+            <start-stop-button></start-stop-button>
+            <start-stop-button running></start-stop-button>
+        </div>
+        <div id="timer-log" class="event-log"></div>
+    </div>
+
+    <h2>📱 App Header</h2>
+    <div class="demo-section">
+        <div class="header-demo">
+            <app-header time="00:15:32" running>
+                <app-menu slot="menu">
+                    <button data-action="export">💾 Export Data</button>
+                    <button data-action="discard">🗑️ Discard Data</button>
+                    <button data-action="settings">⚙️ Settings</button>
+                </app-menu>
+            </app-header>
+        </div>
+        <div id="header-log" class="event-log"></div>
+    </div>
+
+    <h2>☰ Menu</h2>
+    <div class="demo-section menu-demo">
+        <div class="demo-row">
+            <span class="demo-label">Dropdown Menu:</span>
+            <app-menu>
+                <button data-action="connect-power">⚡ Connect Power</button>
+                <button data-action="connect-hr">❤️ Connect Heartrate</button>
+                <button data-action="connect-cadence">🚴 Connect Cadence</button>
+                <button data-action="export">💾 Export Data</button>
+                <button data-action="settings">⚙️ Settings</button>
+            </app-menu>
+        </div>
+        <div id="menu-log" class="event-log"></div>
+    </div>
+
+    <h2>🪟 Modal</h2>
+    <div class="demo-section">
+        <button class="modal-trigger" id="openModal">Open Modal</button>
+        <app-modal title="⚙️ Settings" id="demoModal">
+            <p style="margin-bottom: 12px; color: #666;">Select metrics to track:</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" checked style="width: 20px; height: 20px;">
+                    <span>Power</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" checked style="width: 20px; height: 20px;">
+                    <span>Cadence</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" checked style="width: 20px; height: 20px;">
+                    <span>Heart Rate</span>
+                </label>
+            </div>
+            <div slot="footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button
+                    style="padding: 8px 16px; border: 1px solid #e1e4e8; background: white; border-radius: 6px; cursor: pointer;">Cancel</button>
+                <button
+                    style="padding: 8px 16px; border: none; background: #2196f3; color: white; border-radius: 6px; cursor: pointer;">Save</button>
+            </div>
+        </app-modal>
+        <div id="modal-log" class="event-log"></div>
+    </div>
+
+    <h2>🔔 Toast Notifications</h2>
+    <div class="demo-section">
+        <div class="demo-row">
+            <button class="modal-trigger" onclick="showInfoToast()">Show Info Toast</button>
+            <button class="modal-trigger" style="background: #1f883d;" onclick="showSuccessToast()">Show Success
+                Toast</button>
+            <button class="modal-trigger" style="background: #cf222e;" onclick="showErrorToast()">Show Error
+                Toast</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import all components
+        import './index.ts';
+        import { showToast } from './feedback/ToastNotification.ts';
+
+        // Make showToast available globally for demo buttons
+        window.showInfoToast = () => showToast('This is an info message', 'info');
+        window.showSuccessToast = () => showToast('Data saved successfully!', 'success');
+        window.showErrorToast = () => showToast('Connection failed', 'error');
+
+        // Helper to log events
+        function logEvent(logId, message) {
+            const log = document.getElementById(logId);
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML = `[${time}] ${message}\n` + log.innerHTML;
+        }
+
+        // Connect button events
+        document.querySelectorAll('connect-button').forEach(btn => {
+            btn.addEventListener('connection-toggle', (e) => {
+                logEvent('connect-log', `connection-toggle: ${e.detail.type}`);
+            });
+        });
+
+        // Timer events
+        document.querySelectorAll('timer-display').forEach(timer => {
+            timer.addEventListener('timer-click', () => {
+                logEvent('timer-log', 'timer-click');
+            });
+        });
+
+        document.querySelectorAll('start-stop-button').forEach(btn => {
+            btn.addEventListener('start-stop-click', () => {
+                logEvent('timer-log', 'start-stop-click');
+            });
+        });
+
+        // Header events
+        document.querySelector('app-header').addEventListener('start-stop-click', () => {
+            logEvent('header-log', 'start-stop-click from header');
+        });
+
+        // Menu events
+        document.querySelectorAll('app-menu').forEach(menu => {
+            menu.addEventListener('menu-item-click', (e) => {
+                logEvent('menu-log', `menu-item-click: ${e.detail.action}`);
+            });
+        });
+
+        // Modal events
+        document.getElementById('openModal').addEventListener('click', () => {
+            document.getElementById('demoModal').show();
+        });
+
+        document.getElementById('demoModal').addEventListener('modal-close', () => {
+            document.getElementById('demoModal').hide();
+            logEvent('modal-log', 'modal-close');
+        });
+    </script>
+</body>
+
+</html>

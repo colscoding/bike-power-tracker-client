@@ -1,3 +1,5 @@
+import { getEnvMode } from "../getEnv";
+
 interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -6,7 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
 export const initInstallPrompt = (): void => {
-    if (import.meta.env.MODE === 'test') {
+    if (getEnvMode() === 'test') {
         return;
     }
 

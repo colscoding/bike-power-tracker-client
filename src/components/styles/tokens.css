@@ -1,0 +1,63 @@
+/* Design Tokens - Shared CSS variables for components */
+
+:root {
+    /* Metric Colors */
+    --color-power: #ffd700;
+    --color-heartrate: #ff4444;
+    --color-cadence: #4caf50;
+
+    /* Primary Colors */
+    --color-primary: #2196f3;
+    --color-primary-hover: #1976d2;
+    --color-success: #4caf50;
+    --color-error: #cf222e;
+
+    /* Neutral Colors */
+    --color-background: #ffffff;
+    --color-surface: #f6f8fa;
+    --color-text-primary: #1f2328;
+    --color-text-secondary: #656d76;
+    --color-text-muted: #999999;
+    --color-border: #e1e4e8;
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* Typography */
+    --font-family: system-ui, -apple-system, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 2rem;
+
+    /* Font Weights */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Borders */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+
+    /* Z-Index Layers */
+    --z-index-dropdown: 100;
+    --z-index-modal: 1000;
+    --z-index-notification: 1001;
+}

@@ -8,7 +8,6 @@ This directory contains planning documents for potential improvements and new fe
 
 | Plan                                                    | Priority | Effort | Description                                           |
 | ------------------------------------------------------- | -------- | ------ | ----------------------------------------------------- |
-| [01-typescript-migration](./01-typescript-migration.md) | High     | Large  | Migrate codebase to TypeScript for better type safety |
 | [04-component-library](./04-component-library.md)       | Low      | Large  | Web Components for reusable, encapsulated UI          |
 | [06-state-management](./06-state-management.md)         | Medium   | Medium | Observable store pattern for centralized state        |
 

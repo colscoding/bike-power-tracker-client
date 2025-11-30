@@ -1,4 +1,4 @@
-import { getEnvMode } from './getEnvMode.js';
+import { getEnvMode } from './getEnv.js';
 import type { Measurement, SensorConnection } from './types/index.js';
 import { showNotification } from './ui/notifications.js';
 
