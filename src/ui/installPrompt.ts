@@ -6,6 +6,18 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
+let installBanner: HTMLElement | null = null;
+
+const APP_OPENS_KEY = 'app-opens';
+const INSTALL_DISMISSED_KEY = 'install-dismissed';
+
+/**
+ * Track an event (placeholder for analytics)
+ */
+function trackEvent(eventName: string): void {
+    console.log(`Event tracked: ${eventName}`);
+    // Future: integrate with analytics service
+}
 
 export const initInstallPrompt = (): void => {
     if (getEnvMode() === 'test') {
@@ -20,7 +32,15 @@ export const initInstallPrompt = (): void => {
         // Stash the event so it can be triggered later
         deferredPrompt = e as BeforeInstallPromptEvent;
 
-        // Show the install button
+        // Track app opens and show banner after 3 opens
+        const openCount = parseInt(localStorage.getItem(APP_OPENS_KEY) || '0') + 1;
+        localStorage.setItem(APP_OPENS_KEY, openCount.toString());
+
+        if (openCount >= 3 && !localStorage.getItem(INSTALL_DISMISSED_KEY)) {
+            showInstallBanner();
+        }
+
+        // Also show the install button in menu
         showInstallButton();
     });
 
@@ -29,8 +49,65 @@ export const initInstallPrompt = (): void => {
         console.log('PWA was installed successfully');
         deferredPrompt = null;
         hideInstallButton();
+        hideInstallBanner();
+        trackEvent('pwa_installed');
     });
 };
+
+/**
+ * Show install banner after completing a workout
+ * Call this from the workout completion logic
+ */
+export function showInstallAfterWorkout(): void {
+    if (deferredPrompt && !localStorage.getItem(INSTALL_DISMISSED_KEY)) {
+        showInstallBanner();
+    }
+}
+
+function showInstallBanner(): void {
+    if (installBanner) return;
+
+    installBanner = document.createElement('div');
+    installBanner.className = 'install-banner';
+    installBanner.innerHTML = `
+        <div class="install-content">
+            <img src="./assets/icons/icon-96.png" alt="App icon" class="install-icon">
+            <div class="install-text">
+                <strong>Install Bike Power Tracker</strong>
+                <span>Add to home screen for the best experience</span>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button id="install-banner-yes">Install</button>
+            <button id="install-banner-no">Not now</button>
+        </div>
+    `;
+
+    document.body.appendChild(installBanner);
+
+    document.getElementById('install-banner-yes')?.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+
+            if (outcome === 'accepted') {
+                hideInstallBanner();
+            }
+        }
+    });
+
+    document.getElementById('install-banner-no')?.addEventListener('click', () => {
+        hideInstallBanner();
+        localStorage.setItem(INSTALL_DISMISSED_KEY, 'true');
+    });
+}
+
+function hideInstallBanner(): void {
+    if (installBanner) {
+        installBanner.remove();
+        installBanner = null;
+    }
+}
 
 const showInstallButton = (): void => {
     const installContainer = document.getElementById('installPrompt');

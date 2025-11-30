@@ -107,8 +107,47 @@ export default defineConfig({
                 ],
             },
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+                // Skip waiting for immediate updates
+                skipWaiting: true,
+                clientsClaim: true,
                 runtimeCaching: [
+                    {
+                        // Cache JavaScript and CSS with stale-while-revalidate
+                        urlPattern: /\.(?:js|css)$/,
+                        handler: 'StaleWhileRevalidate',
+                        options: {
+                            cacheName: 'static-resources',
+                            expiration: {
+                                maxEntries: 60,
+                                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+                            },
+                        },
+                    },
+                    {
+                        // Cache images with cache-first
+                        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'images',
+                            expiration: {
+                                maxEntries: 60,
+                                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+                            },
+                        },
+                    },
+                    {
+                        // Cache fonts
+                        urlPattern: /\.(?:woff|woff2|ttf|eot)$/,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'fonts',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
+                            },
+                        },
+                    },
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
                         handler: 'CacheFirst',

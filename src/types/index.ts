@@ -65,4 +65,33 @@ export interface Elements {
 }
 
 // Notification types
-export type NotificationType = 'info' | 'success' | 'error';
+export type NotificationType = 'info' | 'success' | 'error' | 'warning';
+
+// Workout types
+export type WorkoutStatus = 'active' | 'completed' | 'discarded';
+
+export interface WorkoutSummary {
+    avgPower: number | null;
+    maxPower: number | null;
+    avgHeartrate: number | null;
+    maxHeartrate: number | null;
+    avgCadence: number | null;
+    maxCadence: number | null;
+    totalDataPoints: number;
+}
+
+export interface Workout {
+    id: string;
+    status: WorkoutStatus;
+    startTime: number;
+    endTime: number | null;
+    duration: number;
+    measurements: {
+        power: Measurement[];
+        heartrate: Measurement[];
+        cadence: Measurement[];
+    };
+    summary: WorkoutSummary | null;
+    createdAt: number;
+    updatedAt: number;
+}

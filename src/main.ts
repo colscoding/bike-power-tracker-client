@@ -9,9 +9,16 @@ import { registerServiceWorker } from './ui/serviceWorker.js';
 import { initInstallPrompt } from './ui/installPrompt.js';
 import { initSettings } from './ui/settings.js';
 import { exposeVariablesDuringTest } from './exposeVariablesDuringTest.js';
+import { initOfflineIndicator } from './ui/offlineIndicator.js';
+import { initUpdatePrompt } from './ui/updatePrompt.js';
+import { initBackgroundSync } from './services/backgroundSync.js';
+import { initCacheManager } from './services/cacheManager.js';
+import { initStorage } from './services/storage.js';
+import { initWorkoutPersistence } from './ui/workoutPersistence.js';
+import { store, actions } from './store/index.js';
 
 const { measurementsState, connectionsState, timeState } = getInitState();
-exposeVariablesDuringTest({ measurementsState, connectionsState });
+exposeVariablesDuringTest({ measurementsState, connectionsState, store, actions });
 
 initTimerDisplay(timeState);
 initMetricsDisplay({ connectionsState, measurementsState });
@@ -24,3 +31,13 @@ handleWakeLock();
 registerServiceWorker();
 initInstallPrompt();
 initSettings();
+
+// Initialize offline/PWA improvements
+initOfflineIndicator();
+initUpdatePrompt();
+initBackgroundSync();
+initCacheManager();
+initStorage();
+
+// Initialize workout persistence (auto-save to IndexedDB)
+initWorkoutPersistence({ measurementsState, timeState });

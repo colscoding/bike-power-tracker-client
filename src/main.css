@@ -351,3 +351,182 @@ summary::-webkit-details-marker {
     overflow-y: auto;
     flex: 1;
 }
+
+/* Offline Indicator */
+.offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #f6c23e;
+    color: #333;
+    padding: 8px;
+    text-align: center;
+    font-size: 14px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+body.is-offline .requires-network {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Update Notification */
+.update-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2328;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    animation: slideUpNotification 0.3s ease;
+}
+
+.update-notification button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#update-now {
+    background: #2196f3;
+    color: white;
+}
+
+#update-now:hover {
+    background: #1976d2;
+}
+
+#update-later {
+    background: transparent;
+    color: #999;
+}
+
+#update-later:hover {
+    color: #fff;
+}
+
+/* Install Banner */
+.install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 16px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10000;
+    animation: slideUpNotification 0.3s ease;
+}
+
+@keyframes slideUpNotification {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.update-notification {
+    animation: slideUpNotificationCenter 0.3s ease;
+}
+
+@keyframes slideUpNotificationCenter {
+    from {
+        transform: translateX(-50%) translateY(100%);
+    }
+
+    to {
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.install-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.install-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+}
+
+.install-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.install-text span {
+    font-size: 12px;
+    color: #666;
+}
+
+.install-actions {
+    display: flex;
+    gap: 8px;
+}
+
+#install-banner-yes {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#install-banner-yes:hover {
+    background: #1976d2;
+}
+
+#install-banner-no {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#install-banner-no:hover {
+    background: #f5f5f5;
+}
+
+/* Responsive install banner */
+@media (max-width: 480px) {
+    .install-banner {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .install-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    #install-banner-yes,
+    #install-banner-no {
+        flex: 1;
+    }
+}
