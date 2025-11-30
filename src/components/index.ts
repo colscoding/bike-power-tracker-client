@@ -20,5 +20,15 @@ export { AppModal } from './layout/AppModal.js';
 // Feedback components
 export { ToastNotification, showToast } from './feedback/ToastNotification.js';
 
+// Analytics components
+export { AnalyticsDashboard, AnalyticsEngine } from './analytics/index.js';
+export type {
+    WorkoutSummary as AnalyticsWorkoutSummary,
+    TrendData,
+    PersonalRecord,
+    ZoneData,
+    PowerZones,
+} from './analytics/index.js';
+
 // Import styles (consumers can include this CSS file)
 // import './styles/tokens.css';

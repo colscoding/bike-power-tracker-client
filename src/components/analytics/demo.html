@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard Demo</title>
+    <link rel="stylesheet" href="../styles/tokens.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 16px;
+            color: #1f2328;
+        }
+
+        p {
+            margin-bottom: 24px;
+            color: #656d76;
+        }
+
+        .open-btn {
+            padding: 16px 32px;
+            font-size: 18px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .open-btn:hover {
+            background: #1976d2;
+        }
+
+        .info {
+            margin-top: 24px;
+            padding: 16px;
+            background: #fff3cd;
+            border-radius: 8px;
+            color: #856404;
+            max-width: 500px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-container">
+        <h1>📊 Analytics Dashboard Component</h1>
+        <p>Click the button below to open the analytics dashboard</p>
+        <button class="open-btn" id="openDashboard">Open Analytics Dashboard</button>
+
+        <div class="info">
+            <strong>Note:</strong> This demo uses mock data. In production, the dashboard
+            reads workout data from IndexedDB.
+        </div>
+    </div>
+
+    <!-- Analytics Dashboard Component -->
+    <analytics-dashboard id="dashboard"></analytics-dashboard>
+
+    <script type="module">
+        // Import the component
+        import './index.js';
+
+        // Mock the workout database for demo
+        const mockWorkouts = [
+            {
+                id: '1',
+                status: 'completed',
+                startTime: Date.now() - 86400000, // Yesterday
+                endTime: Date.now() - 86400000 + 2700000, // 45 min workout
+                duration: 2700,
+                measurements: {
+                    power: Array.from({ length: 2700 }, (_, i) => ({
+                        timestamp: Date.now() - 86400000 + i * 1000,
+                        value: 180 + Math.random() * 40
+                    })),
+                    heartrate: Array.from({ length: 2700 }, (_, i) => ({
+                        timestamp: Date.now() - 86400000 + i * 1000,
+                        value: 140 + Math.random() * 20
+                    })),
+                    cadence: Array.from({ length: 2700 }, (_, i) => ({
+                        timestamp: Date.now() - 86400000 + i * 1000,
+                        value: 85 + Math.random() * 15
+                    }))
+                },
+                summary: null,
+                createdAt: Date.now() - 86400000,
+                updatedAt: Date.now() - 86400000
+            },
+            {
+                id: '2',
+                status: 'completed',
+                startTime: Date.now() - 172800000, // 2 days ago
+                endTime: Date.now() - 172800000 + 3600000, // 60 min workout
+                duration: 3600,
+                measurements: {
+                    power: Array.from({ length: 3600 }, (_, i) => ({
+                        timestamp: Date.now() - 172800000 + i * 1000,
+                        value: 160 + Math.random() * 60
+                    })),
+                    heartrate: Array.from({ length: 3600 }, (_, i) => ({
+                        timestamp: Date.now() - 172800000 + i * 1000,
+                        value: 135 + Math.random() * 25
+                    })),
+                    cadence: Array.from({ length: 3600 }, (_, i) => ({
+                        timestamp: Date.now() - 172800000 + i * 1000,
+                        value: 80 + Math.random() * 20
+                    }))
+                },
+                summary: null,
+                createdAt: Date.now() - 172800000,
+                updatedAt: Date.now() - 172800000
+            },
+            {
+                id: '3',
+                status: 'completed',
+                startTime: Date.now() - 604800000, // 1 week ago
+                endTime: Date.now() - 604800000 + 1800000, // 30 min workout
+                duration: 1800,
+                measurements: {
+                    power: Array.from({ length: 1800 }, (_, i) => ({
+                        timestamp: Date.now() - 604800000 + i * 1000,
+                        value: 200 + Math.random() * 50
+                    })),
+                    heartrate: Array.from({ length: 1800 }, (_, i) => ({
+                        timestamp: Date.now() - 604800000 + i * 1000,
+                        value: 150 + Math.random() * 15
+                    })),
+                    cadence: Array.from({ length: 1800 }, (_, i) => ({
+                        timestamp: Date.now() - 604800000 + i * 1000,
+                        value: 90 + Math.random() * 10
+                    }))
+                },
+                summary: null,
+                createdAt: Date.now() - 604800000,
+                updatedAt: Date.now() - 604800000
+            }
+        ];
+
+        // Mock the database module for demo purposes
+        // In production, this would be imported from the actual db module
+        window.__mockWorkouts = mockWorkouts;
+
+        const dashboard = document.getElementById('dashboard');
+        const openBtn = document.getElementById('openDashboard');
+
+        openBtn.addEventListener('click', () => {
+            dashboard.show();
+        });
+
+        dashboard.addEventListener('dashboard-close', () => {
+            dashboard.hide();
+        });
+    </script>
+</body>
+
+</html>

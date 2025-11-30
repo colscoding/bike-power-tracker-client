@@ -32,5 +32,11 @@ export default tseslint.config(
             '@typescript-eslint/no-explicit-any': 'warn',
         },
     },
+    {
+        files: ['**/*.test.ts', '**/*.spec.ts'],
+        rules: {
+            '@typescript-eslint/ban-ts-comment': 'off',
+        },
+    },
     prettierConfig
 );
