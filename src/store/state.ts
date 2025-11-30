@@ -1,4 +1,4 @@
-import type { MetricType, NotificationType } from '../types/index.js';
+import type { NotificationType } from '../types/index.js';
 
 // Connection status for Bluetooth devices
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected';

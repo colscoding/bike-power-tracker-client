@@ -52,6 +52,6 @@ export const selectWorkoutSummary = (state: AppStoreState) => ({
     duration: state.workout.elapsedSeconds,
     hasData: Object.values(state.readings).some((r) => r !== null),
     connectedSensors: (Object.entries(state.connections) as [MetricType, { status: ConnectionStatus }][])
-        .filter(([_, c]) => c.status === 'connected')
+        .filter(([, c]) => c.status === 'connected')
         .map(([type]) => type),
 });

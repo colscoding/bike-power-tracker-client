@@ -7,9 +7,9 @@ import type { AppState, ConnectionsState, TimeState } from './types/index.js';
  * This provides backwards compatibility while using the new centralized store.
  */
 function createConnectionsStateProxy(): ConnectionsState {
-    const metricTypes = ['power', 'heartrate', 'cadence'] as const;
+    type MetricTypeKey = 'power' | 'heartrate' | 'cadence';
 
-    const createConnectionProxy = (type: typeof metricTypes[number]) => {
+    const createConnectionProxy = (type: MetricTypeKey) => {
         return {
             get isConnected(): boolean {
                 return store.getState().connections[type].status === 'connected';
