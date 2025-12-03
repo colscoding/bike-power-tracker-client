@@ -174,9 +174,21 @@ test('getTcxString includes required Lap elements', () => {
 
     const tcx = getTcxString(measurements);
 
-    // Required Lap child elements
+    // Required Lap child elements per TCX schema (in order)
     assert.ok(tcx.includes('<TotalTimeSeconds>'));
+    assert.ok(tcx.includes('<DistanceMeters>0</DistanceMeters>'));
     assert.ok(tcx.includes('<Calories>0</Calories>'));
     assert.ok(tcx.includes('<Intensity>Active</Intensity>'));
     assert.ok(tcx.includes('<TriggerMethod>Manual</TriggerMethod>'));
+});
+
+test('getTcxString includes schema location for validation', () => {
+    const measurements = new MeasurementsState();
+    measurements.addPower({ timestamp: 1000, value: 200 });
+
+    const tcx = getTcxString(measurements);
+
+    assert.ok(tcx.includes('xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'));
+    assert.ok(tcx.includes('xsi:schemaLocation'));
+    assert.ok(tcx.includes('TrainingCenterDatabasev2.xsd'));
 });
