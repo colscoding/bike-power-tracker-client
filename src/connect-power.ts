@@ -4,6 +4,7 @@ import { showNotification } from './ui/notifications.js';
 
 export const connectPowerMock = async (): Promise<SensorConnection> => {
     const listeners: ((entry: Measurement) => void)[] = [];
+    const disconnectListeners: (() => void)[] = [];
     const powerInterval = setInterval(() => {
         const randomPower = Math.floor(Math.random() * 300) + 100; // 100-400W
         const entry: Measurement = { timestamp: Date.now(), value: randomPower };
@@ -15,13 +16,60 @@ export const connectPowerMock = async (): Promise<SensorConnection> => {
         addListener: (callback) => {
             listeners.push(callback);
         },
+        addDisconnectListener: (callback) => {
+            disconnectListeners.push(callback);
+        },
     };
 };
 
 export const connectPowerBluetooth = async (): Promise<SensorConnection> => {
     const listeners: ((entry: Measurement) => void)[] = [];
-    let device: BluetoothDevice;
-    let characteristic: BluetoothRemoteGATTCharacteristic;
+    const disconnectListeners: (() => void)[] = [];
+    let device: BluetoothDevice | null = null;
+    let characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+    let isDisconnecting = false;
+
+    // Handler for characteristic value changes
+    const handleCharacteristicValueChanged = (event: Event): void => {
+        try {
+            const target = event.target as BluetoothRemoteGATTCharacteristic;
+            const value = target.value;
+            if (!value) return;
+
+            // Cycling power measurement format: bytes 2-3 contain instantaneous power (little-endian)
+            const power = value.getInt16(2, true);
+
+            // Sanity check for reasonable power values (0-3000W)
+            if (power >= 0 && power <= 3000) {
+                const entry: Measurement = { timestamp: Date.now(), value: power };
+                listeners.forEach((listener) => listener(entry));
+            }
+        } catch (error) {
+            console.error('Error parsing power data:', error);
+        }
+    };
+
+    // Handler for unexpected disconnections
+    const handleDisconnection = (): void => {
+        if (isDisconnecting) return; // Ignore if we initiated the disconnect
+
+        showNotification('Power meter disconnected', 'warning');
+        cleanup();
+        disconnectListeners.forEach((listener) => listener());
+    };
+
+    // Cleanup function to remove event listeners and reset state
+    const cleanup = (): void => {
+        if (characteristic) {
+            characteristic.removeEventListener(
+                'characteristicvaluechanged',
+                handleCharacteristicValueChanged
+            );
+        }
+        if (device) {
+            device.removeEventListener('gattserverdisconnected', handleDisconnection);
+        }
+    };
 
     try {
         // Request Bluetooth device with cycling power service
@@ -38,6 +86,9 @@ export const connectPowerBluetooth = async (): Promise<SensorConnection> => {
         throw error;
     }
 
+    // Listen for unexpected disconnections
+    device.addEventListener('gattserverdisconnected', handleDisconnection);
+
     try {
         // Connect to GATT server
         const server = await device.gatt!.connect();
@@ -50,32 +101,43 @@ export const connectPowerBluetooth = async (): Promise<SensorConnection> => {
 
         // Start notifications
         await characteristic.startNotifications();
+
+        // Listen for power changes
+        characteristic.addEventListener(
+            'characteristicvaluechanged',
+            handleCharacteristicValueChanged
+        );
     } catch (error) {
+        cleanup();
+        if (device.gatt?.connected) {
+            device.gatt.disconnect();
+        }
         showNotification('Failed to connect to power meter', 'error');
         throw error;
     }
 
-    // Listen for power changes
-    characteristic.addEventListener('characteristicvaluechanged', (event) => {
-        const target = event.target as BluetoothRemoteGATTCharacteristic;
-        const value = target.value!;
-        // Cycling power measurement format: bytes 2-3 contain instantaneous power (little-endian)
-        const power = value.getInt16(2, true);
-        const entry: Measurement = { timestamp: Date.now(), value: power };
-        listeners.forEach((listener) => listener(entry));
-    });
-
     return {
         disconnect: () => {
+            isDisconnecting = true;
             try {
-                characteristic.stopNotifications();
-                device.gatt!.disconnect();
+                cleanup();
+                if (characteristic) {
+                    characteristic.stopNotifications().catch(() => {
+                        // Ignore errors - device may already be disconnected
+                    });
+                }
+                if (device?.gatt?.connected) {
+                    device.gatt.disconnect();
+                }
             } catch {
                 // Ignore disconnect errors - device may already be disconnected
             }
         },
         addListener: (callback) => {
             listeners.push(callback);
+        },
+        addDisconnectListener: (callback: () => void) => {
+            disconnectListeners.push(callback);
         },
     };
 };

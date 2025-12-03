@@ -4,6 +4,7 @@ import { showNotification } from './ui/notifications.js';
 
 export const connectCadenceMock = async (): Promise<SensorConnection> => {
     const listeners: ((entry: Measurement) => void)[] = [];
+    const disconnectListeners: (() => void)[] = [];
     const cadenceInterval = setInterval(() => {
         const randomCadence = Math.floor(Math.random() * 40) + 70; // 70-110 rpm
         const entry: Measurement = { timestamp: Date.now(), value: randomCadence };
@@ -15,15 +16,98 @@ export const connectCadenceMock = async (): Promise<SensorConnection> => {
         addListener: (callback) => {
             listeners.push(callback);
         },
+        addDisconnectListener: (callback) => {
+            disconnectListeners.push(callback);
+        },
     };
 };
 
 export const connectCadenceBluetooth = async (): Promise<SensorConnection> => {
     const listeners: ((entry: Measurement) => void)[] = [];
+    const disconnectListeners: (() => void)[] = [];
     let lastCrankRevs: number | null = null;
     let lastCrankTime: number | null = null;
-    let device: BluetoothDevice;
-    let characteristic: BluetoothRemoteGATTCharacteristic;
+    let device: BluetoothDevice | null = null;
+    let characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+    let isDisconnecting = false;
+
+    // Handler for characteristic value changes
+    const handleCharacteristicValueChanged = (event: Event): void => {
+        try {
+            const target = event.target as BluetoothRemoteGATTCharacteristic;
+            const value = target.value;
+            if (!value) return;
+
+            const flags = value.getUint8(0);
+
+            // Check if crank revolution data is present (bit 1 of flags)
+            if (flags & 0x02) {
+                // Crank revolution data format:
+                // - Cumulative Crank Revolutions (uint16, bytes 1-2 or 5-6 depending on wheel data)
+                // - Last Crank Event Time (uint16, bytes 3-4 or 7-8, units: 1/1024 seconds)
+
+                let offset = 1; // Start after flags byte
+
+                // If wheel revolution data is present (bit 0), skip it (6 bytes: 4 for revs + 2 for time)
+                if (flags & 0x01) {
+                    offset = 7;
+                }
+
+                const crankRevs = value.getUint16(offset, true);
+                const crankTime = value.getUint16(offset + 2, true); // Units: 1/1024 seconds
+
+                // Calculate RPM from delta between measurements
+                if (lastCrankRevs !== null && lastCrankTime !== null) {
+                    let revDelta = crankRevs - lastCrankRevs;
+                    let timeDelta = crankTime - lastCrankTime;
+
+                    // Handle rollover (uint16 max is 65535)
+                    if (revDelta < 0) revDelta += 65536;
+                    if (timeDelta < 0) timeDelta += 65536;
+
+                    // Calculate RPM: (revolutions / time_in_seconds) * 60
+                    // Time is in 1/1024 seconds, so convert to seconds
+                    if (timeDelta > 0) {
+                        const timeInSeconds = timeDelta / 1024;
+                        const rpm = Math.round((revDelta / timeInSeconds) * 60);
+
+                        // Sanity check for reasonable cadence values
+                        if (rpm >= 0 && rpm < 300) {
+                            const entry: Measurement = { timestamp: Date.now(), value: rpm };
+                            listeners.forEach((listener) => listener(entry));
+                        }
+                    }
+                }
+
+                lastCrankRevs = crankRevs;
+                lastCrankTime = crankTime;
+            }
+        } catch (error) {
+            console.error('Error parsing cadence data:', error);
+        }
+    };
+
+    // Handler for unexpected disconnections
+    const handleDisconnection = (): void => {
+        if (isDisconnecting) return; // Ignore if we initiated the disconnect
+
+        showNotification('Cadence sensor disconnected', 'warning');
+        cleanup();
+        disconnectListeners.forEach((listener) => listener());
+    };
+
+    // Cleanup function to remove event listeners and reset state
+    const cleanup = (): void => {
+        if (characteristic) {
+            characteristic.removeEventListener(
+                'characteristicvaluechanged',
+                handleCharacteristicValueChanged
+            );
+        }
+        if (device) {
+            device.removeEventListener('gattserverdisconnected', handleDisconnection);
+        }
+    };
 
     try {
         // Request Bluetooth device with cycling speed and cadence service
@@ -40,6 +124,9 @@ export const connectCadenceBluetooth = async (): Promise<SensorConnection> => {
         throw error;
     }
 
+    // Listen for unexpected disconnections
+    device.addEventListener('gattserverdisconnected', handleDisconnection);
+
     try {
         // Connect to GATT server
         const server = await device.gatt!.connect();
@@ -52,72 +139,43 @@ export const connectCadenceBluetooth = async (): Promise<SensorConnection> => {
 
         // Start notifications
         await characteristic.startNotifications();
+
+        // Listen for cadence changes
+        characteristic.addEventListener(
+            'characteristicvaluechanged',
+            handleCharacteristicValueChanged
+        );
     } catch (error) {
+        cleanup();
+        if (device.gatt?.connected) {
+            device.gatt.disconnect();
+        }
         showNotification('Failed to connect to cadence sensor', 'error');
         throw error;
     }
 
-    // Listen for cadence changes
-    characteristic.addEventListener('characteristicvaluechanged', (event) => {
-        const target = event.target as BluetoothRemoteGATTCharacteristic;
-        const value = target.value!;
-        const flags = value.getUint8(0);
-
-        // Check if crank revolution data is present (bit 1 of flags)
-        if (flags & 0x02) {
-            // Crank revolution data format:
-            // - Cumulative Crank Revolutions (uint16, bytes 1-2 or 5-6 depending on wheel data)
-            // - Last Crank Event Time (uint16, bytes 3-4 or 7-8, units: 1/1024 seconds)
-
-            let offset = 1; // Start after flags byte
-
-            // If wheel revolution data is present (bit 0), skip it (6 bytes: 4 for revs + 2 for time)
-            if (flags & 0x01) {
-                offset = 7;
-            }
-
-            const crankRevs = value.getUint16(offset, true);
-            const crankTime = value.getUint16(offset + 2, true); // Units: 1/1024 seconds
-
-            // Calculate RPM from delta between measurements
-            if (lastCrankRevs !== null && lastCrankTime !== null) {
-                let revDelta = crankRevs - lastCrankRevs;
-                let timeDelta = crankTime - lastCrankTime;
-
-                // Handle rollover (uint16 max is 65535)
-                if (revDelta < 0) revDelta += 65536;
-                if (timeDelta < 0) timeDelta += 65536;
-
-                // Calculate RPM: (revolutions / time_in_seconds) * 60
-                // Time is in 1/1024 seconds, so convert to seconds
-                if (timeDelta > 0) {
-                    const timeInSeconds = timeDelta / 1024;
-                    const rpm = Math.round((revDelta / timeInSeconds) * 60);
-
-                    // Sanity check for reasonable cadence values
-                    if (rpm >= 0 && rpm < 300) {
-                        const entry: Measurement = { timestamp: Date.now(), value: rpm };
-                        listeners.forEach((listener) => listener(entry));
-                    }
-                }
-            }
-
-            lastCrankRevs = crankRevs;
-            lastCrankTime = crankTime;
-        }
-    });
-
     return {
         disconnect: () => {
+            isDisconnecting = true;
             try {
-                characteristic.stopNotifications();
-                device.gatt!.disconnect();
+                cleanup();
+                if (characteristic) {
+                    characteristic.stopNotifications().catch(() => {
+                        // Ignore errors - device may already be disconnected
+                    });
+                }
+                if (device?.gatt?.connected) {
+                    device.gatt.disconnect();
+                }
             } catch {
                 // Ignore disconnect errors - device may already be disconnected
             }
         },
         addListener: (callback) => {
             listeners.push(callback);
+        },
+        addDisconnectListener: (callback: () => void) => {
+            disconnectListeners.push(callback);
         },
     };
 };
