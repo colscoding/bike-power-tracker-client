@@ -44,7 +44,7 @@ export const initConnectionButtons = ({
             cadence: connectCadence,
         };
         try {
-            const { disconnect, addListener } = await connectFns[key]();
+            const { disconnect, addListener, addDisconnectListener } = await connectFns[key]();
 
             connectionsState[key].disconnect = disconnect;
             connectionsState[key].isConnected = true;
@@ -52,6 +52,22 @@ export const initConnectionButtons = ({
             addListener((entry) => {
                 measurementsState.add(key, entry);
             });
+
+            // Handle unexpected disconnections (e.g., device goes out of range)
+            if (addDisconnectListener) {
+                addDisconnectListener(() => {
+                    connectionsState[key].disconnect = null;
+                    connectionsState[key].isConnected = false;
+                    const connectElem = elements[key]?.connect;
+                    if (connectElem?.textContent) {
+                        connectElem.textContent = `${emojis[key]} Connect ${key.charAt(0).toUpperCase() + key.slice(1)}`;
+                    }
+                    const displayElem = elements?.[key]?.display;
+                    if (displayElem?.textContent) {
+                        displayElem.textContent = '--';
+                    }
+                });
+            }
 
             const connectElem = elements[key]?.connect;
             if (connectElem?.textContent) {

@@ -36,6 +36,7 @@ export interface TimeState {
 export interface SensorConnection {
     disconnect: () => void;
     addListener: (callback: (entry: Measurement) => void) => void;
+    addDisconnectListener?: (callback: () => void) => void;
 }
 
 // Settings

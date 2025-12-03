@@ -4,6 +4,7 @@ import { showNotification } from './ui/notifications.js';
 
 export const connectHeartRateMock = async (): Promise<SensorConnection> => {
     const listeners: ((entry: Measurement) => void)[] = [];
+    const disconnectListeners: (() => void)[] = [];
     const heartRateInterval = setInterval(() => {
         const randomHeartRate = Math.floor(Math.random() * 80) + 120; // 120-200 bpm
         const entry: Measurement = { timestamp: Date.now(), value: randomHeartRate };
@@ -15,13 +16,69 @@ export const connectHeartRateMock = async (): Promise<SensorConnection> => {
         addListener: (callback) => {
             listeners.push(callback);
         },
+        addDisconnectListener: (callback) => {
+            disconnectListeners.push(callback);
+        },
     };
 };
 
 export const connectHeartRateBluetooth = async (): Promise<SensorConnection> => {
     const listeners: ((entry: Measurement) => void)[] = [];
-    let device: BluetoothDevice;
-    let characteristic: BluetoothRemoteGATTCharacteristic;
+    const disconnectListeners: (() => void)[] = [];
+    let device: BluetoothDevice | null = null;
+    let characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+    let isDisconnecting = false;
+
+    // Handler for characteristic value changes
+    const handleCharacteristicValueChanged = (event: Event): void => {
+        try {
+            const target = event.target as BluetoothRemoteGATTCharacteristic;
+            const value = target.value;
+            if (!value) return;
+
+            const flags = value.getUint8(0);
+            let heartRate: number;
+
+            // Check Heart Rate Value Format bit (bit 0)
+            if (flags & 0x01) {
+                // UINT16 format
+                heartRate = value.getUint16(1, true); // little-endian
+            } else {
+                // UINT8 format
+                heartRate = value.getUint8(1);
+            }
+
+            // Sanity check for reasonable heart rate values (30-250 bpm)
+            if (heartRate >= 30 && heartRate <= 250) {
+                const entry: Measurement = { timestamp: Date.now(), value: heartRate };
+                listeners.forEach((listener) => listener(entry));
+            }
+        } catch (error) {
+            console.error('Error parsing heart rate data:', error);
+        }
+    };
+
+    // Handler for unexpected disconnections
+    const handleDisconnection = (): void => {
+        if (isDisconnecting) return; // Ignore if we initiated the disconnect
+
+        showNotification('Heart rate monitor disconnected', 'warning');
+        cleanup();
+        disconnectListeners.forEach((listener) => listener());
+    };
+
+    // Cleanup function to remove event listeners and reset state
+    const cleanup = (): void => {
+        if (characteristic) {
+            characteristic.removeEventListener(
+                'characteristicvaluechanged',
+                handleCharacteristicValueChanged
+            );
+        }
+        if (device) {
+            device.removeEventListener('gattserverdisconnected', handleDisconnection);
+        }
+    };
 
     try {
         // Request Bluetooth device with heart rate service
@@ -38,6 +95,9 @@ export const connectHeartRateBluetooth = async (): Promise<SensorConnection> => 
         throw error;
     }
 
+    // Listen for unexpected disconnections
+    device.addEventListener('gattserverdisconnected', handleDisconnection);
+
     try {
         // Connect to GATT server
         const server = await device.gatt!.connect();
@@ -50,42 +110,43 @@ export const connectHeartRateBluetooth = async (): Promise<SensorConnection> => 
 
         // Start notifications
         await characteristic.startNotifications();
+
+        // Listen for heart rate changes
+        characteristic.addEventListener(
+            'characteristicvaluechanged',
+            handleCharacteristicValueChanged
+        );
     } catch (error) {
+        cleanup();
+        if (device.gatt?.connected) {
+            device.gatt.disconnect();
+        }
         showNotification('Failed to connect to heart rate monitor', 'error');
         throw error;
     }
 
-    // Listen for heart rate changes
-    characteristic.addEventListener('characteristicvaluechanged', (event) => {
-        const target = event.target as BluetoothRemoteGATTCharacteristic;
-        const value = target.value!;
-        const flags = value.getUint8(0);
-        let heartRate: number;
-
-        // Check Heart Rate Value Format bit (bit 0)
-        if (flags & 0x01) {
-            // UINT16
-            heartRate = value.getUint16(1, true); // little-endian
-        } else {
-            // UINT8
-            heartRate = value.getUint8(1);
-        }
-
-        const entry: Measurement = { timestamp: Date.now(), value: heartRate };
-        listeners.forEach((listener) => listener(entry));
-    });
-
     return {
         disconnect: () => {
+            isDisconnecting = true;
             try {
-                characteristic.stopNotifications();
-                device.gatt!.disconnect();
+                cleanup();
+                if (characteristic) {
+                    characteristic.stopNotifications().catch(() => {
+                        // Ignore errors - device may already be disconnected
+                    });
+                }
+                if (device?.gatt?.connected) {
+                    device.gatt.disconnect();
+                }
             } catch {
                 // Ignore disconnect errors - device may already be disconnected
             }
         },
         addListener: (callback) => {
             listeners.push(callback);
+        },
+        addDisconnectListener: (callback: () => void) => {
+            disconnectListeners.push(callback);
         },
     };
 };
